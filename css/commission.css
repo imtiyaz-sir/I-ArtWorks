@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 80%; /* Increased from 75% */
+    margin: 0 auto;
+    padding: 25px; /* Increased from 20px */
+}
+
+header {
+    background-color: #e1ecf4;
+    padding: 15px; /* Increased from 10px */
+    text-align: center;
+    font-size: 22px; /* Increased from 18px */
+    color: #2c5877;
+}
+
+.note {
+    font-size: 26px; /* Increased from 22px */
+    color: #666;
+    margin: 15px 0; /* Increased from 10px */
+}
+
+h1 {
+    font-size: 40px; /* Increased from 34px */
+    text-align: center;
+    margin-bottom: 15px; /* Increased from 10px */
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px; /* Increased from 20px */
+}
+
+.form-container {
+    background: #fff;
+    padding: 25px; /* Increased from 20px */
+    border-radius: 8px; /* Increased from 5px */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Increased from 10px */
+    text-align: center;
+}
+
+.icon {
+    font-size: 60px; /* Increased from 50px */
+    margin-bottom: 15px; /* Increased from 10px */
+}
+
+h2 {
+    font-size: 32px; /* Increased from 28px */
+    margin-bottom: 15px; /* Increased from 10px */
+}
+
+.form-subtitle {
+    color: #666;
+    margin-bottom: 25px; /* Increased from 20px */
+}
+
+.form-group {
+    margin-bottom: 30px; /* Increased from 25px */
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px; /* Increased from 5px */
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px; /* Increased from 8px */
+    border: 2px solid #ccc; /* Increased from 1px */
+    border-radius: 6px; /* Increased from 4px */
+    box-sizing: border-box;
+    font-size: 16px; /* Added for better readability */
+}
+
+.form-group textarea {
+    height: 480px; /* Increased from 420px */
+    resize: vertical;
+}
+
+button {
+    width: 100%;
+    padding: 15px; /* Increased from 10px */
+    background-color: #157A8D;
+    color: #fff;
+    border: none;
+    border-radius: 6px; /* Increased from 4px */
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 23px; /* Added for better readability */
+}
+
+button:hover {
+    background-color: #333;
+}
+
+.how-it-works {
+    margin-top: 40px; /* Increased from 30px */
+    text-align: center;
+}
+
+.steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px; /* Increased from 20px */
+}
+
+.step {
+    width: 30%;
+}
+
+.circle {
+    width: 40px; /* Increased from 30px */
+    height: 40px; /* Increased from 30px */
+    background-color: #000;
+    color: #fff;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px; /* Increased from 10px */
+    font-size: 18px; /* Increased for better readability */
+}
+
+.step p {
+    color: #666;
+    font-size: 14px; /* Increased from 12px */
+    line-height: 1.6; /* Slightly increased for readability */
+}

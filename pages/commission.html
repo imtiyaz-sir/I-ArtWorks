@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>myntra bag</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/bag.css"/>
+    <link rel="stylesheet" href="/css/commission.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+   <!-- Header -->
+   <header>
+      <div class="logo_container">
+        <a href="/index.html"><img class="Imax_home" src="/images/logo.png" alt="Imax"></a>
+      </div>
+      <nav class="nav_bar">
+        <a href="#">Gallery</a>
+        <a href="#">Commissions</a>
+        <a href="#">About</a>
+        <a href="#" >
+            Contact</a>
+
+
+      </nav>
+      <div class="action_bar">
+        <a class="action_container" href="#">
+          <span class="material-symbols-outlined action_icon">favorite</span>
+          <span class="action_name"> Wishlist</span>
+        </a>
+        <a class="action_container" href="#">
+          <span class="material-symbols-outlined action_icon">person</span>
+          <span class="action_name">Profile</span>
+        </a>
+        <a class="action_container" href="/pages/bag.html">
+          <span class="material-symbols-outlined action_icon">shopping_bag</span>
+          <span class="action_name">Bag</span>
+          <span class="bag-item-count">0</span>
+        </a>
+      </div>
+   </header>
+   
+    
+  <div class="container">
+
+        <main>
+            <h1>Commission a Custom Portrait</h1>
+            <p class="subtitle">Transform your memories into timeless artwork. Our talented artists specialize in creating personalized portraits that capture the essence and emotion of your most cherished moments.</p>
+            <div class="form-container">
+                <div class="icon"><i class="fa-solid fa-palette"></i></div>
+                <h2>Commission a Custom Portrait</h2>
+                <p class="form-subtitle">Work with our talented artists to create a unique, personalized artwork</p>
+                <form>
+                    <div class="form-group">
+                        <label for="full-name">Full Name *</label>
+                        <input type="text" id="full-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number (Optional)</label>
+                        <input type="tel" id="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="portrait-type">Portrait Type *</label>
+                        <select id="portrait-type" required>
+                            <option value="">Select portrait type</option>
+                            <option value="individual Portrait" >Individual Portrait </option>
+                            <option value="Family Portrait">Family Portrait</option>
+                            <<option value="Couple Portrait">Couple portrait</option>
+                            <<option value="Pet portrait">Pet portrait</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="medium">Medium *</label>
+                        <select id="medium" required>
+                            <option value="">Select medium</option>
+                            <option value="Oil pastels">Oil Pastels</option>
+                            <option value="watercolor">Watercolor</option>
+                            <option value="Charcoal Drawing">Charcoal Drawing</option>
+                            <option value="Graphite Pencil">Graphite Pencil</option>
+                            <option value="Digital Art">Digital Art</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="size">Size *</label>
+                        <select id="size" required>
+                            <option value="">Select size</option>
+                            <option value="A3">A3</option>
+                            <option value="A4">A4</option>
+                            <option value="A5">A5</option>
+                        </select>
+                        <p class="note">Prices are estimates and may vary based on complexity</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="budget">Budget (Optional)</label>
+                        <input type="number" id="budget" placeholder="Enter your budget in Rupees">
+                        <p class="note">This helps us recommend the best options for your needs</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeline">Timeline (Optional)</label>
+                        <select id="timeline">
+                            <option value="">Select timeline</option>
+                            <option value="1-2 Weeks">1-2 weeks</option>
+                            <option value="2-4 Weeks"> 2-4 weeks</option>
+                            <option value="1-2 months">1-2 Months</option>
+                            <option value="2-3 months">2-3 months</option>
+                            <option value="No specific timeline">No specific timeline</option>
+                        </select>
+                    </div>
+                      <div class="form-group">
+                                        <label class="form-label">Reference Images</label>
+                                        <input type="file" class="form-control" multiple accept="image/*">
+                                    </div>
+                    <div class="form-group">
+                        <label for="special-requests">Special Requests or Description</label>
+                        <textarea id="special-requests" placeholder="Describe your vision, style preferences, background requirements, or any other details..."></textarea>
+                        <p class="note">The more details you provide, the better we can match you with the right artist</p>
+                    </div>
+                    <button type="submit">Submit Request</button>
+                </form>
+            </div>
+            <div class="how-it-works">
+                <h2>How it Works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="circle">1</div>
+                        <p>Submit Your Request<br>Fill out the form with your portrait details, preferences, and any special requirements.</p>
+                    </div>
+                    <div class="step">
+                        <div class="circle">2</div>
+                        <p>Artist Consultation<br>We'll match you with the perfect artist and provide a detailed quote and timeline.</p>
+                    </div>
+                    <div class="step">
+                        <div class="circle">3</div>
+                        <p>Create & Deliver<br>Your artist creates your custom portrait and delivers it safely to your door.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    
+        <footer>
+
+
+     <div class="footer-bottom">
+    <div class="footer-copy">
+      © 2025 ArtGallery & Imtiyaz | All rights reserved.
+    </div>
+    <div class="footer-links-bottom">
+      <a href="#">Privacy Policy</a> | 
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+    </footer>
+    <script src="/data/artworks.js"></script>
+<script src="/script/index.js"></script>
+    <script src="/script/bag.js"></script>
+</body>
+</html>
