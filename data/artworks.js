@@ -11,7 +11,7 @@ const artworks = [
    original_price: 100,
     discount_percentage: 10,
     return_period: 14,
-    delivery_date: '10 Oct 2025',
+    delivery_date: '1 Oct 2025',
   },
   {
     id:02,
@@ -25,7 +25,7 @@ const artworks = [
     original_price: 1000,
   discount_percentage: 28,
   return_period: 14,
-  delivery_date: '10 Oct 2025',
+  delivery_date: '8 NOV 2025',
   },
    {
      id:03,
