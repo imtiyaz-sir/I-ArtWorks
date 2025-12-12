@@ -224,8 +224,8 @@ function showNotification(message) {
 }
 
 // Add animation styles
-const style = document.createElement('style');
-style.textContent = `
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
   @keyframes slideIn {
     from {
       transform: translateX(400px);
@@ -247,7 +247,8 @@ style.textContent = `
     }
   }
 `;
-document.head.appendChild(style);
+document.head.appendChild(notificationStyle);
+
 
 // Close modals when clicking outside
 window.addEventListener('click', (event) => {
