@@ -11,7 +11,7 @@ const artworks = [
    original_price: 100,
     discount_percentage: 10,
     return_period: 14,
-    delivery_date: '10 Oct 2025',
+    delivery_date: '1 Oct 2025',
   },
   {
     id:02,
@@ -25,7 +25,7 @@ const artworks = [
     original_price: 1000,
   discount_percentage: 28,
   return_period: 14,
-  delivery_date: '10 Oct 2025',
+  delivery_date: '8 NOV 2025',
   },
    {
      id:03,
@@ -120,17 +120,17 @@ const artworks = [
 },
 {
   id :09,
-  image: "/I-ArtWorks/images/m.jpg",
+  image: "/I-ArtWorks/images/lo.jpg",
   label: "limited",
-  title: "Illusion Sketch ",
+  title: "couple love",
   artist: "Imtiyaz Rehman",
   meta: "ABSTRACT",
   size: "18” × 22”",
-  medium: "Ink on Paper",
+  medium: "water colour on Paper",
   original_price: 700,
-  discount_percentage: 60,
+  discount_percentage: 75,
   return_period: 14,
-  delivery_date: '10 Oct 2025',
+  delivery_date: '1 Oct 2025',
   
 },
   ];
