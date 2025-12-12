@@ -38,6 +38,7 @@ header {
 }
 .nav_bar a:hover {
     border-bottom: 4px solid #f54e77;
+    color: #f54e77;
 }
 .action_bar {
     
@@ -54,6 +55,9 @@ header {
     font-weight: bold;
     text-decoration: none;
     align-items: center;
+}
+.action_container:hover {
+    color: #f54e77;
 }
 
 /* Bag count */
