@@ -250,6 +250,7 @@ notificationStyle.textContent = `
 document.head.appendChild(notificationStyle);
 
 
+
 // Close modals when clicking outside
 window.addEventListener('click', (event) => {
   const previewModal = document.getElementById('previewModal');
