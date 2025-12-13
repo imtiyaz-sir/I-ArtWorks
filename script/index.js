@@ -159,6 +159,15 @@ function previewArt(artId) {
 
   modal.classList.add('show');
 }
+// Navigate to product detail page
+function viewProduct(productId) {
+  window.location.href = `pages/product-detail.html?id=${productId}`;
+}
+
+// Preview artwork in modal (keep this for backward compatibility)
+function previewArt(artId) {
+  viewProduct(artId);
+}
 
 // Close preview modal
 function closePreviewModal() {
@@ -166,7 +175,23 @@ function closePreviewModal() {
   modal.classList.remove('show');
 }
 
+// Commission modal functions
+function showCommissionForm() {
+  const modal = document.getElementById('commissionModal');
+  modal.classList.add('show');
+}
 
+function closeCommissionModal() {
+  const modal = document.getElementById('commissionModal');
+  modal.classList.remove('show');
+}
+
+function handleCommission(event) {
+  event.preventDefault();
+  showNotification('Thank you! We will contact you shortly about your commission.');
+  closeCommissionModal();
+  event.target.reset();
+}
 
 // Newsletter subscription
 function handleNewsletter(event) {
@@ -202,10 +227,8 @@ function showNotification(message) {
   notification.textContent = message;
   notification.style.cssText = `
     position: fixed;
-    top: 150px;
-    right: 50px;
-    font-size:30px;
-    font-weight:bolder;
+    top: 100px;
+    right: 20px;
     background: #2bb673;
     color: white;
     padding: 1rem 1.5rem;
@@ -248,8 +271,6 @@ notificationStyle.textContent = `
   }
 `;
 document.head.appendChild(notificationStyle);
-
-
 
 // Close modals when clicking outside
 window.addEventListener('click', (event) => {
