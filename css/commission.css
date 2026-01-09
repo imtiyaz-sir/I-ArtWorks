@@ -397,6 +397,103 @@ body {
     margin-right: 0.3rem;
 }
 
+/* Quick WhatsApp Section */
+.quick-whatsapp-section {
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #25D366 0%, #20BA5A 100%);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(37, 211, 102, 0.3);
+}
+
+.quick-whatsapp-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: white;
+}
+
+.whatsapp-icon {
+    font-size: 4rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.whatsapp-info {
+    flex: 1;
+}
+
+.whatsapp-info h4 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.whatsapp-info p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.btn-quick-whatsapp {
+    background: white;
+    color: #25D366;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-quick-whatsapp:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.btn-quick-whatsapp i {
+    font-size: 1.5rem;
+}
+
+.form-divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.form-divider::before,
+.form-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background: #ddd;
+}
+
+.form-divider::before {
+    left: 0;
+}
+
+.form-divider::after {
+    right: 0;
+}
+
+.form-divider span {
+    background: white;
+    padding: 0 1rem;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
 /* How It Works */
 .how-it-works {
     margin: 4rem 0;
@@ -760,6 +857,16 @@ body {
     .pricing-grid,
     .faq-grid {
         grid-template-columns: 1fr;
+    }
+
+    .quick-whatsapp-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .btn-quick-whatsapp {
+        width: 100%;
+        justify-content: center;
     }
 }
 
