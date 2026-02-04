@@ -323,7 +323,7 @@ const carouselArtworks = [
     },
     {
         id: 2,
-        image: '/I-ArtWorks/images/mu.jpg',
+        image: 'mu.jpg',
         title: 'Urban Symphony',
         artist: 'Marcus Rivera',
         description: 'Contemporary expression of city life through abstract forms',
@@ -332,7 +332,7 @@ const carouselArtworks = [
     },
     {
         id: 3,
-        image: '/I-ArtWorks/images/cn.jpg',
+        image: '/cn.jpg',
         title: 'Golden Serenity',
         artist: 'Aisha Patel',
         description: 'Peaceful moments captured in warm, luminous tones',
@@ -341,7 +341,7 @@ const carouselArtworks = [
     },
     {
         id: 4,
-        image: 'images/bd.jpg',
+        image: '/images/bd.jpg',
         title: 'Midnight Reflections',
         artist: 'James Morrison',
         description: 'Deep contemplation expressed through bold strokes and shadows',
