@@ -323,7 +323,7 @@ const carouselArtworks = [
     },
     {
         id: 2,
-        image: '/images/mu.jpg',
+        image: '/I-ArtWorks/images/mu.jpg',
         title: 'Urban Symphony',
         artist: 'Marcus Rivera',
         description: 'Contemporary expression of city life through abstract forms',
