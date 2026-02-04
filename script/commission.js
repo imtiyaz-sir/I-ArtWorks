@@ -1,8 +1,14 @@
+// Constants
+const BUSINESS_NAME = "I Art Works";
+const WHATSAPP_NUMBER = "916006202075"; // Enter number without '+' or spaces for API
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     setupFormValidation();
     setupFileUpload();
     displayBagIcon();
+    setupWhatsAppFloating(); // Added this so the floating button appears
+    setupRealTimeValidation(); // Added this to init the input listeners
 });
 
 // Display bag icon count
@@ -94,20 +100,23 @@ function submitCommissionRequest() {
     const formData = {
         fullName: document.getElementById('full-name').value,
         email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
+        phone: document.getElementById('phone').value || 'Not provided',
         portraitType: document.getElementById('portrait-type').value,
         medium: document.getElementById('medium').value,
         size: document.getElementById('size').value,
-        budget: document.getElementById('budget').value,
-        timeline: document.getElementById('timeline').value,
+        budget: document.getElementById('budget').value || 'Not specified',
+        timeline: document.getElementById('timeline').value || 'Flexible',
         specialRequests: document.getElementById('special-requests').value,
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toLocaleString('en-IN')
     };
     
-    // Store in localStorage (in production, send to server)
+    // Store in localStorage
     let commissions = JSON.parse(localStorage.getItem('commissions') || '[]');
     commissions.push(formData);
     localStorage.setItem('commissions', JSON.stringify(commissions));
+    
+    // Send to WhatsApp
+    sendCommissionToWhatsApp(formData);
     
     // Show success modal
     showSuccessModal();
@@ -120,9 +129,6 @@ function submitCommissionRequest() {
     if (fileList) {
         fileList.innerHTML = '';
     }
-    
-    // Send confirmation email (simulated)
-    console.log('Commission request submitted:', formData);
 }
 
 // Show success modal
@@ -130,7 +136,6 @@ function showSuccessModal() {
     const modal = document.getElementById('successModal');
     if (modal) {
         modal.classList.add('show');
-        
         // Auto-scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -141,7 +146,6 @@ function closeSuccessModal() {
     const modal = document.getElementById('successModal');
     if (modal) {
         modal.classList.remove('show');
-        
         // Redirect to home page after closing
         setTimeout(() => {
             window.location.href = '../index.html';
@@ -219,9 +223,8 @@ function setupFileUpload() {
 // Remove file from selection
 function removeFile(index) {
     const fileInput = document.getElementById('reference-images');
-    const fileList = document.getElementById('file-list');
     
-    if (fileInput && fileList) {
+    if (fileInput) {
         const dataTransfer = new DataTransfer();
         const files = Array.from(fileInput.files);
         
@@ -278,28 +281,16 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Add animation styles
+// Add animation styles dynamically
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
     @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
     }
 `;
 document.head.appendChild(style);
@@ -312,10 +303,9 @@ window.addEventListener('click', function(e) {
     }
 });
 
-// Add real-time validation feedback
-document.addEventListener('DOMContentLoaded', function() {
+// Setup Real-time validation
+function setupRealTimeValidation() {
     const inputs = document.querySelectorAll('input, select, textarea');
-    
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
             if (this.hasAttribute('required') && !this.value.trim()) {
@@ -329,5 +319,132 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.borderColor = '#f54e77';
         });
     });
-});
-console.log("commission.js loaded");
+}
+
+// ========== WhatsApp Integration ==========
+
+// Send commission details to WhatsApp
+function sendCommissionToWhatsApp(formData) {
+    // Format the message beautifully
+    const message = `
+🎨 *NEW COMMISSION REQUEST* 🎨
+
+*Customer Details:*
+━━━━━━━━━━━━━━━
+👤 Name: ${formData.fullName}
+📧 Email: ${formData.email}
+📱 Phone: ${formData.phone}
+
+*Artwork Requirements:*
+━━━━━━━━━━━━━━━
+🖼️ Portrait Type: ${formData.portraitType}
+🎨 Medium: ${formData.medium}
+📐 Size: ${formData.size}
+💰 Budget: ${formData.budget}
+⏰ Timeline: ${formData.timeline}
+
+*Special Requests:*
+━━━━━━━━━━━━━━━
+${formData.specialRequests}
+
+📅 *Submitted:* ${formData.submittedAt}
+
+━━━━━━━━━━━━━━━
+_Sent from ${BUSINESS_NAME} Commission Form_
+`.trim();
+
+    // Open WhatsApp with pre-filled message
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    
+    // Open in new window/tab
+    window.open(whatsappURL, '_blank');
+}
+
+// Setup WhatsApp floating button
+function setupWhatsAppFloating() {
+    // Create floating WhatsApp button if it doesn't exist
+    if (!document.getElementById('whatsappFloat')) {
+        const floatingBtn = document.createElement('a');
+        floatingBtn.id = 'whatsappFloat';
+        floatingBtn.className = 'whatsapp-float';
+        floatingBtn.href = '#';
+        floatingBtn.title = 'Chat on WhatsApp';
+        floatingBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
+        floatingBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            sendGeneralCommissionInquiry();
+        });
+        document.body.appendChild(floatingBtn);
+        
+        // Add floating button styles
+        const floatStyle = document.createElement('style');
+        floatStyle.textContent = `
+            .whatsapp-float {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                width: 60px;
+                height: 60px;
+                background: #25D366;
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2rem;
+                box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
+                z-index: 9999;
+                transition: all 0.3s;
+                animation: pulse 2s infinite;
+                text-decoration: none;
+            }
+            .whatsapp-float:hover {
+                transform: scale(1.1);
+                box-shadow: 0 10px 30px rgba(37, 211, 102, 0.6);
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            @media (max-width: 768px) {
+                .whatsapp-float {
+                    bottom: 20px;
+                    right: 20px;
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.5rem;
+                }
+            }
+        `;
+        document.head.appendChild(floatStyle);
+    }
+}
+
+// Send general commission inquiry
+function sendGeneralCommissionInquiry() {
+    const message = `Hi ${BUSINESS_NAME}! 👋
+
+I'm interested in commissioning custom artwork.
+
+Can you provide more details about:
+• Available artists and their styles
+• Pricing and timeline
+• The commission process
+
+Thank you!`;
+
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, '_blank');
+}
+
+// Quick WhatsApp inquiry from page
+function quickWhatsAppInquiry() {
+    const message = `Hi ${BUSINESS_NAME}! 👋
+
+I have a question about commissioning artwork.
+
+Can you help me?`;
+
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, '_blank');
+}
