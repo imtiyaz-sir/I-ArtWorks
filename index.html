@@ -7,6 +7,8 @@
   <title>I-ArtWorks | Extraordinary Art Gallery</title>
   <meta name="description" content="Discover and collect extraordinary artwork from talented artists worldwide. Original pieces, free shipping, and authentic artist-verified collections.">
   <link rel="stylesheet" href="./css/style.css">
+  <!-- Add Carousel CSS -->
+  <link rel="stylesheet" href="./css/carousel.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 </head>
 
@@ -51,7 +53,7 @@
         <a href="#gallery" class="hero-button">Explore Collection</a>
       </div>
    </section>
-
+   
    <main>
       <div class="content">
         <div class="original">
@@ -81,6 +83,13 @@
           <div class="badge">🚚 Free Shipping <br><small>Worldwide delivery</small></div>
           <div class="badge">✔️ Artist Verified <br><small>Curated selection</small></div>
         </div>
+        
+   <!-- ⭐ NEW: Featured Carousel Section -->
+  <div></div>
+        <section id="featuredCarousel" class="carousel-section">
+          <!-- Carousel will be generated here by JavaScript -->
+        </section>
+
 
         <!-- Preview Gallery Section -->
         <section class="gallery">
@@ -170,9 +179,6 @@
             </div>
           </div>
         </section>
-
-        <!-- Commissions Section -->
-
 
         <!-- Footer -->
         <footer class="site-footer" id="contact">
@@ -289,5 +295,7 @@
    <script src="data/artworks.js"></script>
    <script src="script/index.js"></script>
    <script src="script/bag.js"></script>
+   <!-- Add Carousel JavaScript -->
+   <script src="script/carousel.js"></script>
 </body>
 </html>
