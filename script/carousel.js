@@ -314,7 +314,7 @@ class ArtCarousel {
 const carouselArtworks = [
     {
         id: 1,
-        image: ' /images/6.jpg',
+        image: '/I-ArtWorks/images/6.jpg',
         title: 'Ethereal Dreams',
         artist: 'Sophia Chen',
         description: 'A mesmerizing blend of colors and emotions captured on canvas',
@@ -332,7 +332,7 @@ const carouselArtworks = [
     },
     {
         id: 3,
-        image: '/images/cn.jpg',
+        image: '/I-ArtWorks/images/cn.jpg',
         title: 'Golden Serenity',
         artist: 'Aisha Patel',
         description: 'Peaceful moments captured in warm, luminous tones',
@@ -341,7 +341,7 @@ const carouselArtworks = [
     },
     {
         id: 4,
-        image: '/images/bd.jpg',
+        image: 'images/bd.jpg',
         title: 'Midnight Reflections',
         artist: 'James Morrison',
         description: 'Deep contemplation expressed through bold strokes and shadows',
