@@ -648,7 +648,7 @@ main {
 }
 
 .add-cart-btn {
-    background: #f54e77;
+    background: #FF2223 !important;
     color: white;
 }
 
@@ -657,10 +657,6 @@ main {
     transform: translateY(-2px);
 }
 
-.add-cart-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
 
 .preview-btn {
     background: white;
