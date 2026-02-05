@@ -632,7 +632,7 @@ main {
 }
 
 .add-cart-btn,
-.view-details-btn {
+.preview-btn {
     flex: 1;
     padding: 0.8rem;
     border: none;
@@ -647,28 +647,28 @@ main {
     gap: 0.5rem;
 }
 
-.add-to-cart-btn {
+.add-cart-btn {
     background: #f54e77;
     color: white;
 }
 
-.add-to-cart-btn:hover {
+.add-cart-btn:hover {
     background: #ff6c9f;
     transform: translateY(-2px);
 }
 
-.add-to-cart-btn:disabled {
+.add-cart-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
 
-.view-details-btn {
+.preview-btn {
     background: white;
     color: #222;
     border: 2px solid #ddd;
 }
 
-.view-details-btn:hover {
+.preview-btn:hover {
     background: #222;
     color: white;
     border-color: #222;
