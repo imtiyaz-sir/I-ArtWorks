@@ -1022,3 +1022,48 @@ main {
         width: 100%;
     }
 }
+
+/* Add these rules to your existing style.css file */
+
+/* Fix for art-options-overlay to not block wishlist button */
+.art-options-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    display: flex;
+    z-index: 10; /* Make sure this is LOWER than wishlist button (z-index: 15) */
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* CRITICAL: Don't block clicks by default */
+}
+
+.art-img:hover .art-options-overlay {
+    opacity: 1;
+    pointer-events: auto; /* Only capture clicks when visible */
+}
+
+/* Ensure overlay buttons are clickable */
+.art-options-overlay button {
+    margin: 10px;
+    padding: 14px 24px;
+    font-size: 1.2rem;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    pointer-events: auto; /* Ensure buttons are clickable */
+}
+
+/* Wishlist button should always be on top and clickable */
+.wishlist-btn {
+    pointer-events: auto !important; /* Always clickable */
+    z-index: 15 !important; /* Higher than overlay */
+}

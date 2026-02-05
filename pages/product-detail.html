@@ -6,6 +6,7 @@
     <title id="pageTitle">Artwork Details - I-ArtWorks</title>
     <meta name="description" id="pageDescription" content="View detailed information about this beautiful artwork">
     <link rel="stylesheet" href="../css/product-detail.css">
+        <link rel="stylesheet" href="/css/wishlist.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -22,9 +23,10 @@
         <a href="../index.html#contact">Contact</a>
       </nav>
       <div class="action_bar">
-        <a class="action_container" href="#">
+ <a class="action_container" href="#" id="wishlistBtn">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
+          <span class="wishlist-badge">0</span>
         </a>
         <a class="action_container" href="#">
           <span class="material-symbols-outlined action_icon">person</span>
@@ -405,5 +407,6 @@
    <script src="../data/artworks.js"></script>
    <script src="../script/index.js"></script>
    <script src="../script/product-detail.js"></script>
+   <script src="../script/wishlist.js"></script>
 </body>
 </html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Wishlist | I-ArtWorks</title>
+    <meta name="description" content="Your curated collection of favorite artworks from I-ArtWorks gallery">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/wishlist.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo_container">
+            <a href="../index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        </div>
+        <nav class="nav_bar">
+            <a href="../index.html#gallery">Gallery</a>
+            <a href="commission.html">Commissions</a>
+            <a href="../index.html#about">About</a>
+            <a href="../index.html#contact">Contact</a>
+        </nav>
+        <div class="action_bar">
+            <a class="action_container" href="wishlist.html">
+                <span class="material-symbols-outlined action_icon">favorite</span>
+                <span class="action_name">Wishlist</span>
+                <span class="wishlist-badge">0</span>
+            </a>
+            <a class="action_container" href="#" id="profileBtn">
+                <span class="material-symbols-outlined action_icon">person</span>
+                <span class="action_name">Profile</span>
+            </a>
+            <a class="action_container" href="bag.html">
+                <span class="material-symbols-outlined action_icon">shopping_bag</span>
+                <span class="action_name">Bag</span>
+                <span class="bag-item-count">0</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main style="margin-top: 6rem;">
+        <div id="wishlistContainer">
+            <!-- Wishlist content will be dynamically generated here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="footer-col brand-info">
+                <div class="footer-logo">ITY</div>
+                <div class="footer-title">I-ArtWorks by Imtiyaz</div>
+                <p>
+                    Discover and collect extraordinary artwork pieces from talented artists worldwide. 
+                    Each piece curated for authenticity and soul.
+                </p>
+                <div class="footer-social">
+                    <a href="#" aria-label="Website">🌐</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                    <a href="#" aria-label="Facebook">📘</a>
+                </div>
+            </div>
+            <div class="footer-col quick-links">
+                <div class="footer-heading">Quick Links</div>
+                <a href="../index.html#gallery">Gallery</a>
+                <a href="commission.html">Commissions</a>
+                <a href="../index.html#about">About</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+            <div class="footer-col customer-service">
+                <div class="footer-heading">Customer Service</div>
+                <a href="#shipping">Shipping & Returns</a>
+                <a href="#howto">How it works</a>
+                <a href="#faq">FAQ</a>
+                <a href="#support">Support</a>
+            </div>
+            <div class="footer-col stay-updated">
+                <div class="footer-heading">Stay Updated</div>
+                <p>Subscribe to our newsletter for exclusive offers, new collections, and special articles.</p>
+                <form id="newsletterForm" onsubmit="handleNewsletter(event)">
+                    <input type="email" placeholder="Enter your email" class="footer-email" required />
+                    <button class="footer-subscribe" type="submit">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer-icons-row">
+            <div class="footer-icon-card">
+                <div class="footer-icon">🎨</div>
+                <div class="icon-title">Original Artwork</div>
+                <div class="icon-desc">Handcrafted pieces by real artists</div>
+            </div>
+            <div class="footer-icon-card">
+                <div class="footer-icon">🚚</div>
+                <div class="icon-title">Free Shipping</div>
+                <div class="icon-desc">Worldwide delivery available</div>
+            </div>
+            <div class="footer-icon-card">
+                <div class="footer-icon">🔒</div>
+                <div class="icon-title">Secure Payment</div>
+                <div class="icon-desc">100% safe transactions</div>
+            </div>
+            <div class="footer-icon-card">
+                <div class="footer-icon">↩️</div>
+                <div class="footer-icon">✓</div>
+                <div class="icon-title">Easy Returns</div>
+                <div class="icon-desc">14-day return policy</div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-copy">
+                © 2025 I-ArtWorks by Imtiyaz | All rights reserved.
+            </div>
+            <div class="footer-links-bottom">
+                <a href="#privacy">Privacy Policy</a> | 
+                <a href="#terms">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../data/artworks.js"></script>
+    <script src="../script/bag.js"></script>
+    <script src="../script/wishlist.js"></script>
+    
+    <script>
+        // Newsletter handler
+        function handleNewsletter(event) {
+            event.preventDefault();
+            alert('Thank you for subscribing!');
+            event.target.reset();
+        }
+    </script>
+       <script src="../script/bag.js"></script>
+        <script src="../script/index.js"></script>
+</body>
+</html>
