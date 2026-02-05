@@ -635,6 +635,9 @@ main {
     background: #f54e77 !important;
     color: white !important;
 }
+.preview-btn{
+    background: rgba(79, 250, 39, 1) !important;
+}
 
 /* About Section */
 .about-gallery {
@@ -780,6 +783,7 @@ main {
     width: 100%;
     border-radius: 10px;
     margin-bottom: 1rem;
+    
 }
 
 /* Footer */

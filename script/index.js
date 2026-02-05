@@ -99,7 +99,7 @@ function displayItemsOnHomePage() {
       <div class="art-img">
         <img class="art-thumb" src="${art.image}" alt="${art.title}">
         <div class="art-options-overlay">
-          <button class="preview-btn" onclick="previewArt(${art.id})">👁️ Preview</button>
+          <button class="preview-btn" onclick="previewArt(${art.id})"> <span class="material-symbols-outlined">visibility</span> Preview</button>
           <button class="add-cart-btn" onclick="addCart(${art.id})">🛒 Add to Cart</button>
         </div>
         <div class="art-label ${labelClass}">${art.label}</div>
