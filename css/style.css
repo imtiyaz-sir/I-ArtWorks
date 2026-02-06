@@ -1,3 +1,44 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette - Rich & Sophisticated */
+    --primary: #E63946;
+    --primary-light: #FF6B7A;
+    --primary-dark: #C1323F;
+    --secondary: #1D3557;
+    --accent: #F4A261;
+    --accent-light: #F7C59F;
+    
+    /* Neutrals */
+    --black: #14181C;
+    --charcoal: #1E1E1E;
+    --gray-dark: #2D3436;
+    --gray: #636E72;
+    --gray-light: #B2BEC3;
+    --white: #FFFFFF;
+    --cream: #F8F9FA;
+    --beige: #F5F3F0;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.24);
+    
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Poppins', sans-serif;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
 * {
     margin: 0;
     padding: 0;
