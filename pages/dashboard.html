@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Dashboard | I-ArtWorks</title>
+    
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo_container">
+            <a href="../index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        </div>
+        <nav class="nav_bar">
+            <a href="../index.html#gallery">Gallery</a>
+            <a href="commission.html">Commissions</a>
+            <a href="../index.html#about">About</a>
+            <a href="../index.html#contact">Contact</a>
+        </nav>
+        <div class="action_bar">
+            <a class="action_container" href="wishlist.html">
+                <span class="material-symbols-outlined action_icon">favorite</span>
+                <span class="action_name">Wishlist</span>
+                <span class="wishlist-badge">0</span>
+            </a>
+            <a class="action_container" href="#" id="profileBtn">
+                <span class="material-symbols-outlined action_icon">person</span>
+                <span class="action_name">Profile</span>
+            </a>
+            <a class="action_container" href="bag.html">
+                <span class="material-symbols-outlined action_icon">shopping_bag</span>
+                <span class="action_name">Bag</span>
+                <span class="bag-item-count">0</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main style="margin-top: 6rem;">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="dashboard-welcome">
+                    <h1>Welcome back, <span id="userName">User</span>! 👋</h1>
+                    <p>Here's what's happening with your art collection</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">shopping_bag</span>
+                    </div>
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="totalOrders">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">favorite</span>
+                    </div>
+                    <div class="stat-label">Wishlist Items</div>
+                    <div class="stat-value" id="wishlistCount">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">palette</span>
+                    </div>
+                    <div class="stat-label">Artworks Collected</div>
+                    <div class="stat-value" id="artworksCollected">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">payments</span>
+                    </div>
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value" id="totalSpent">₹0</div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Section -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">Recent Orders</h3>
+                    <a href="orders.html" style="color: #f54e77; text-decoration: none; font-weight: 600;">View All →</a>
+                </div>
+                <div id="recentOrders">
+                    <p style="text-align: center; color: #999; padding: 3rem;">No orders yet. Start shopping to see your orders here!</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h3 class="section-title">Quick Actions</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <a href="../index.html#gallery" style="padding: 1.5rem; background: #f9f9f9; border-radius: 12px; text-decoration: none; text-align: center; transition: all 0.3s;" 
+                       onmouseover="this.style.background='#f54e77'; this.style.color='white'" 
+                       onmouseout="this.style.background='#f9f9f9'; this.style.color='#222'">
+                        <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">palette</span>
+                        <span style="font-weight: 600;">Browse Gallery</span>
+                    </a>
+                    
+                    <a href="wishlist.html" style="padding: 1.5rem; background: #f9f9f9; border-radius: 12px; text-decoration: none; text-align: center; transition: all 0.3s;" 
+                       onmouseover="this.style.background='#f54e77'; this.style.color='white'" 
+                       onmouseout="this.style.background='#f9f9f9'; this.style.color='#222'">
+                        <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">favorite</span>
+                        <span style="font-weight: 600;">My Wishlist</span>
+                    </a>
+                    
+                    <a href="profile.html" style="padding: 1.5rem; background: #f9f9f9; border-radius: 12px; text-decoration: none; text-align: center; transition: all 0.3s;" 
+                       onmouseover="this.style.background='#f54e77'; this.style.color='white'" 
+                       onmouseout="this.style.background='#f9f9f9'; this.style.color='#222'">
+                        <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">person</span>
+                        <span style="font-weight: 600;">Edit Profile</span>
+                    </a>
+                    
+                    <a href="commission.html" style="padding: 1.5rem; background: #f9f9f9; border-radius: 12px; text-decoration: none; text-align: center; transition: all 0.3s;" 
+                       onmouseover="this.style.background='#f54e77'; this.style.color='white'" 
+                       onmouseout="this.style.background='#f9f9f9'; this.style.color='#222'">
+                        <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">brush</span>
+                        <span style="font-weight: 600;">Commission Art</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="footer-col brand-info">
+                <div class="footer-logo">ITY</div>
+                <div class="footer-title">I-ArtWorks by Imtiyaz</div>
+                <p>Discover and collect extraordinary artwork pieces from talented artists worldwide.</p>
+                <div class="footer-social">
+                    <a href="#" aria-label="Website">🌐</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                    <a href="#" aria-label="Facebook">📘</a>
+                </div>
+            </div>
+            <div class="footer-col quick-links">
+                <div class="footer-heading">Quick Links</div>
+                <a href="../index.html#gallery">Gallery</a>
+                <a href="commission.html">Commissions</a>
+                <a href="../index.html#about">About</a>
+                <a href="../index.html#contact">Contact</a>
+            </div>
+            <div class="footer-col customer-service">
+                <div class="footer-heading">Customer Service</div>
+                <a href="#shipping">Shipping & Returns</a>
+                <a href="#faq">FAQ</a>
+                <a href="#support">Support</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-copy">© 2025 I-ArtWorks by Imtiyaz | All rights reserved.</div>
+            <div class="footer-links-bottom">
+                <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../script/auth.js"></script>
+    <script>
+        // Check if user is logged in
+        if (!authManager.isLoggedIn()) {
+            window.location.href = '../index.html';
+        }
+
+        // Load dashboard data
+        function loadDashboard() {
+            const user = authManager.getCurrentUser();
+            if (!user) return;
+
+            // Update user name
+            document.getElementById('userName').textContent = user.fullName.split(' ')[0];
+
+            // Update stats
+            document.getElementById('totalOrders').textContent = user.orders?.length || 0;
+            document.getElementById('wishlistCount').textContent = user.wishlist?.length || 0;
+            document.getElementById('artworksCollected').textContent = user.orders?.length || 0;
+            
+            // Calculate total spent
+            const totalSpent = user.orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
+            document.getElementById('totalSpent').textContent = '₹' + totalSpent.toLocaleString();
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+</html>
