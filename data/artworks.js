@@ -133,4 +133,19 @@ const artworks = [
   delivery_date: '1 Oct 2025',
   
 },
+{
+  id :10,
+  image: "/I-ArtWorks/images/6.jpg",
+  label: "limited",
+  title: "couple love",
+  artist: "Imtiyaz Rehman",
+  meta: "ABSTRACT",
+  size: "18” × 22”",
+  medium: "water colour on Paper",
+  original_price: 700,
+  discount_percentage: 75,
+  return_period: 14,
+  delivery_date: '1 Oct 2025',
+  
+},
   ];
