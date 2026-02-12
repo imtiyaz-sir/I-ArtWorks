@@ -1,0 +1,377 @@
+/* ==============================================
+   I-ARTWORKS PREMIUM UI - ENHANCED VERSION
+   Modern, Luxurious, Gallery-Inspired Design
+   ============================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette - Rich & Sophisticated */
+    --primary: #E63946;
+    --primary-light: #FF6B7A;
+    --primary-dark: #C1323F;
+    --secondary: #1D3557;
+    --accent: #F4A261;
+    --accent-light: #F7C59F;
+    
+    /* Neutrals */
+    --black: #14181C;
+    --charcoal: #1E1E1E;
+    --gray-dark: #2D3436;
+    --gray: #636E72;
+    --gray-light: #B2BEC3;
+    --white: #FFFFFF;
+    --cream: #F8F9FA;
+    --beige: #F5F3F0;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 20px 48px rgba(204, 58, 58, 0.39);
+    
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Poppins', sans-serif;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--beige);
+    color: var(--black);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ========================================
+   ENHANCED HEADER
+   ======================================== */
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(230, 57, 70, 0.1);
+    padding: 0 4rem;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+header.scrolled {
+    height: 75px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: var(--shadow-md);
+}
+
+.logo_container {
+    position: relative;
+    z-index: 10;
+}
+
+.Imax_home {
+    height: 70px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: all var(--transition-base);
+}
+
+.Imax_home:hover {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+.nav_bar {
+    display: flex;
+    gap: 3.5rem;
+    align-items: center;
+}
+
+.nav_bar a {
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--secondary);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.nav_bar a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transform: translateX(-50%);
+    transition: width var(--transition-base);
+}
+
+.nav_bar a:hover {
+    color: var(--primary);
+}
+
+.nav_bar a:hover::after {
+    width: 100%;
+}
+
+.action_bar {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.action_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
+    position: relative;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+}
+
+.action_container:hover {
+    color: var(--primary);
+    background: rgba(230, 57, 70, 0.05);
+    transform: translateY(-2px);
+}
+
+.action_icon {
+    font-size: 26px !important;
+}
+
+/* Original Tag */
+.original {
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 6rem 0 4rem;
+    box-shadow: var(--shadow-md);
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Headings */
+.artwork {
+    margin-bottom: 4rem;
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+}
+
+.dis,
+.ext {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+}
+
+.ext {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.soul {
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 300;
+    color: var(--gray);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.care {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.8;
+    max-width: 700px;
+    color: var(--gray-dark);
+}/* Buttons - Enhanced */
+.btns {
+  margin: 4rem 0;
+  display: flex;
+  gap: 1.5rem;
+  animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
+}
+
+.exp,
+.view {
+  height: 60px;
+  padding: 0 2.5rem;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.exp {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
+}
+
+.exp:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(230, 57, 70, 0.4);
+}
+
+.view {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.view:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-4px);
+}
+
+/* Badges - Glassmorphism Style */
+.badges {
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s backwards;
+}
+
+.badge {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(230, 57, 70, 0.1);
+    border-radius: 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.badge:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--primary);
+}
+
+.badge small {
+    display: block;
+    font-size: 14px;
+    color: var(--gray);
+    font-weight: 400;
+    margin-top: 0.5rem;
+}
+
+.art-grid.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.artwork-card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all var(--transition-slow);
+    box-shadow: var(--shadow-sm);
+}
+
+.artwork-card:hover {
+
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+/* About Section */
+.about-gallery {
+    background: white;
+    padding: 5rem 3rem;
+    border-radius: 32px;
+    box-shadow: var(--shadow-lg);
+    margin: 6rem auto;
+    max-width: 1000px;
+}
+
+.about-gallery h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: var(--charcoal);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.about-gallery p {
+    font-size: 1.5rem;
+    line-height: 1.9;
+    color: rgba(31, 28, 28, 0.99);
+    margin-bottom: 1.5rem;
+}
+
+.gallery-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin-top: 4rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 0.5rem;
+}
