@@ -1,3 +1,44 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette - Rich & Sophisticated */
+    --primary: #E63946;
+    --primary-light: #FF6B7A;
+    --primary-dark: #C1323F;
+    --secondary: #1D3557;
+    --accent: #F4A261;
+    --accent-light: #F7C59F;
+    
+    /* Neutrals */
+    --black: #14181C;
+    --charcoal: #1E1E1E;
+    --gray-dark: #2D3436;
+    --gray: #636E72;
+    --gray-light: #B2BEC3;
+    --white: #FFFFFF;
+    --cream: #F8F9FA;
+    --beige: #F5F3F0;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.24);
+    
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Poppins', sans-serif;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
 * {
     margin: 0;
     padding: 0;
@@ -188,23 +229,26 @@ main {
 }
 
 .content {
-    width: 90%;
+    width: 95%;
 }
 
 /* Original tag */
 .original {
-    background: #EDFFFD;
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
     display: inline-block;
-    padding: 12px 20px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 22px;
-    margin-bottom: 3rem;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 6rem 0 4rem;
+    box-shadow: var(--shadow-md);
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Headings and Text */
 .dis {
-    font-size: 4.5rem;
+    font-size: 1.5rem;
     font-weight: 900;
     margin-bottom: 0.5rem;
 }
@@ -410,7 +454,7 @@ main {
 
 .control-btn {
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #FF8D8D;
     border-radius: 10px;
     width: 74px;
     height: 74px;
@@ -418,19 +462,20 @@ main {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    color: #222;
+    color: #403F3F;
     transition: all 0.2s ease;
 }
 
 .control-btn:hover {
     color: #FCFCFC;
-    background: #FA78BB;
+    background: #FA7889;
     transform: scale(1.05);
 }
 
 .control-btn.active {
-    background: #f54e77;
+    background: var(--primary);
     color: white;
+    font-size: 52px;
 }
 
 .control-btn .material-symbols-outlined {
@@ -631,11 +676,44 @@ main {
     transform: scale(1.08);
 }
 
-.add-cart-btn {
-    background: #f54e77 !important;
-    color: white !important;
+.add-cart-btn,
+.preview-btn {
+    flex: 1;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
+.add-cart-btn {
+    background: #FF2223 !important;
+    color: white;
+}
+
+.add-cart-btn:hover {
+    background: #ff6c9f;
+    transform: translateY(-2px);
+}
+
+
+.preview-btn {
+    background: white;
+    color: #222;
+    border: 2px solid #ddd;
+}
+
+.preview-btn:hover {
+    background: #222;
+    color: white;
+    border-color: #222;
+}
 /* About Section */
 .about-gallery {
     margin: 4rem auto 2.5rem auto;
@@ -780,6 +858,7 @@ main {
     width: 100%;
     border-radius: 10px;
     margin-bottom: 1rem;
+    
 }
 
 /* Footer */
@@ -1021,4 +1100,49 @@ main {
     .exp, .view {
         width: 100%;
     }
+}
+
+/* Add these rules to your existing style.css file */
+
+/* Fix for art-options-overlay to not block wishlist button */
+.art-options-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    display: flex;
+    z-index: 10; /* Make sure this is LOWER than wishlist button (z-index: 15) */
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* CRITICAL: Don't block clicks by default */
+}
+
+.art-img:hover .art-options-overlay {
+    opacity: 1;
+    pointer-events: auto; /* Only capture clicks when visible */
+}
+
+/* Ensure overlay buttons are clickable */
+.art-options-overlay button {
+    margin: 10px;
+    padding: 14px 24px;
+    font-size: 1.2rem;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    pointer-events: auto; /* Ensure buttons are clickable */
+}
+
+/* Wishlist button should always be on top and clickable */
+.wishlist-btn {
+    pointer-events: auto !important; /* Always clickable */
+    z-index: 15 !important; /* Higher than overlay */
 }
