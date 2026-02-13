@@ -229,7 +229,7 @@ main {
 }
 
 .content {
-    width: 90%;
+    width: 95%;
 }
 
 /* Original tag */
@@ -454,7 +454,7 @@ main {
 
 .control-btn {
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #FF8D8D;
     border-radius: 10px;
     width: 74px;
     height: 74px;
@@ -462,19 +462,20 @@ main {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    color: #222;
+    color: #403F3F;
     transition: all 0.2s ease;
 }
 
 .control-btn:hover {
     color: #FCFCFC;
-    background: #FA78BB;
+    background: #FA7889;
     transform: scale(1.05);
 }
 
 .control-btn.active {
-    background: #f54e77;
+    background: var(--primary);
     color: white;
+    font-size: 52px;
 }
 
 .control-btn .material-symbols-outlined {
