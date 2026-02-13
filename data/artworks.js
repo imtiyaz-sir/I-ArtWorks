@@ -145,7 +145,6 @@ const artworks = [
   original_price: 700,
   discount_percentage: 75,
   return_period: 14,
-  delivery_date: '1 Oct 2025',
-  
-}
+  delivery_date: '1 Oct 2025'
+},
   ];

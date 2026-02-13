@@ -14,24 +14,25 @@
    <!-- Header -->
    <header>
       <div class="logo_container">
-        <a href="../index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        <a href="/index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
       </div>
       <nav class="nav_bar">
-        <a href="../index.html#gallery">Gallery</a>
-        <a href="commission.html">Commissions</a>
+                <a href="../index.html#gallery">Gallery</a>
+        <a href="../pages/commission.html" class="active">Commissions</a>
         <a href="../index.html#about">About</a>
         <a href="../index.html#contact">Contact</a>
       </nav>
       <div class="action_bar">
-        <a class="action_container" href="#">
+        <a class="action_container" href="wishlist.html" id="wishlistBtn">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
+          <span class="wishlist-badge">0</span>
         </a>
-        <a class="action_container" href="#">
+        <a class="action_container" href="#" id="profileBtn">
           <span class="material-symbols-outlined action_icon">person</span>
           <span class="action_name">Profile</span>
         </a>
-        <a class="action_container" href="bag.html" class="active">
+        <a class="action_container" href="bag.html">
           <span class="material-symbols-outlined action_icon">shopping_bag</span>
           <span class="action_name">Bag</span>
           <span class="bag-item-count">0</span>
@@ -192,5 +193,6 @@
    <script src="../data/artworks.js"></script>
    <script src="../script/index.js"></script>
    <script src="../script/bag.js"></script>
+    <script src="../script/wishlist.js"></script>
 </body>
 </html>
