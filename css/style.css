@@ -1183,3 +1183,114 @@ main {
     pointer-events: auto !important; /* Always clickable */
     z-index: 15 !important; /* Higher than overlay */
 }
+
+.hot-week-section{
+  padding:40px 20px;
+  background:#f5f1ec;
+}
+
+.hot-header h2{
+  font-size:42px;
+  margin-bottom:20px;
+  font-family:"Cormorant Garamond",serif;
+}
+
+.hot-tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:25px;
+}
+
+.hot-tab{
+  border:none;
+  padding:12px 20px;
+  border-radius:30px;
+  background:#e7dfd8;
+  cursor:pointer;
+}
+
+.hot-tab.active{
+  background:#d7cdc4;
+}
+
+.hot-slider{
+  display:flex;
+  overflow-x:auto;
+  gap:18px;
+  scroll-behavior:smooth;
+}
+
+.hot-slider::-webkit-scrollbar{
+  display:none;
+}
+
+.hot-card{
+  min-width:280px;
+  background:#fff;
+  border-radius:22px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.hot-image{
+  position:relative;
+}
+
+.hot-image img{
+  width:100%;
+  height:340px;
+  object-fit:cover;
+  cursor:pointer;
+}
+
+.hot-badge{
+  position:absolute;
+  top:15px;
+  left:15px;
+  z-index:2;
+  background:#6b7d45;
+  color:white;
+  padding:8px 15px;
+  border-radius:30px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.hot-cart-btn{
+  position:absolute;
+  right:15px;
+  bottom:15px;
+
+  width:50px;
+  height:50px;
+
+  border:none;
+  border-radius:50%;
+  background:black;
+  color:white;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  cursor:pointer;
+}
+
+.hot-info{
+  padding:18px;
+}
+
+.hot-category{
+  color:#888;
+  font-size:12px;
+}
+
+.hot-info h3{
+  margin:8px 0;
+  cursor:pointer;
+}
+
+.hot-price{
+  font-weight:700;
+  font-size:18px;
+}
