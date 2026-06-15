@@ -4,13 +4,15 @@ onLoad();
 function onLoad() {
   let iItemsStr = localStorage.getItem('iartwork');
   iartwork = iItemsStr ? JSON.parse(iItemsStr) : [];
+
   displayItemsOnHomePage();
+  displayHotThisWeek();
+
   displayBagIcon();
   updateArtworkCount();
   setupViewToggle();
   setupFilterButton();
 }
-
 function addCart(itemId) {
   iartwork.push(itemId);
   localStorage.setItem('iartwork', JSON.stringify(iartwork));
@@ -287,3 +289,61 @@ window.addEventListener('click', (event) => {
 
 // Initialize on load
 displayItemsOnHomePage();
+
+function displayHotThisWeek() {
+
+  const slider =
+    document.getElementById("hotArtworkSlider");
+
+  if (!slider) return;
+
+  let html = "";
+
+  hotArtworks.forEach(item => {
+
+    html += `
+      <div class="hot-card">
+
+        ${
+          item.badge
+          ? `<div class="hot-badge">${item.badge}</div>`
+          : ''
+        }
+
+        <div class="hot-image">
+
+          <img src="${item.image}"
+               alt="${item.title}">
+
+          <button
+            class="hot-cart-btn"
+            onclick="addCart(${item.id})">
+
+            <span class="material-symbols-outlined">
+              shopping_bag
+            </span>
+
+          </button>
+
+        </div>
+
+        <div class="hot-info">
+
+          <span class="hot-category">
+            ${item.category}
+          </span>
+
+          <h3>${item.title}</h3>
+
+          <div class="hot-price">
+            ₹${item.price}
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  });
+
+  slider.innerHTML = html;
+}
