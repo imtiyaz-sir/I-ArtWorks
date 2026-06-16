@@ -18,7 +18,7 @@ const hotArtworks = [
 
   {
     id: 7,
-    image: "/I-ArtWorks/images/flower.jpg",
+    image: "/I-ArtWorks/images/it.jpg",
     title: "Soft Bloom",
     category: "DRAWING",
     price: 55,
@@ -27,7 +27,7 @@ const hotArtworks = [
 
   {
     id: 8,
-    image: "/I-ArtWorks/images/amber.jpg",
+    image: "/I-ArtWorks/images/im.jpg",
     title: "Amber Flow",
     category: "PAINTING",
     price: 54
