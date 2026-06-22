@@ -224,50 +224,52 @@ header.scrolled {
     line-height: 1.8;
     max-width: 700px;
     color: var(--gray-dark);
-}/* Buttons - Enhanced */
+}
+
+/* Buttons - Enhanced */
 .btns {
-  margin: 4rem 0;
-  display: flex;
-  gap: 1.5rem;
-  animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
+    margin: 4rem 0;
+    display: flex;
+    gap: 1.5rem;
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards;
 }
 
 .exp,
 .view {
-  height: 60px;
-  padding: 0 2.5rem;
-  border-radius: 50px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
+    height: 60px;
+    padding: 0 2.5rem;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
 }
 
 .exp {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
 }
 
 .exp:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(230, 57, 70, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(230, 57, 70, 0.4);
 }
 
 .view {
-  background: transparent;
-  border: 2px solid var(--primary);
-  color: var(--primary);
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
 }
 
 .view:hover {
-  background: var(--primary);
-  color: white;
-  transform: translateY(-4px);
+    background: var(--primary);
+    color: white;
+    transform: translateY(-4px);
 }
 
 /* Badges - Glassmorphism Style */
@@ -324,7 +326,6 @@ header.scrolled {
 }
 
 .artwork-card:hover {
-
     box-shadow: var(--shadow-xl);
     border-color: var(--primary);
 }
@@ -376,126 +377,6 @@ header.scrolled {
     margin-bottom: 0.5rem;
 }
 
-@media (max-width:768px){
-
-header{
-    display:flex;
-    align-items:cener;
-    justify-content:space-between;
-    height:60px;
-    padding:0 12px;
-    width:100%;
-}
-
-/* Left */
-.menu-btn{
-    width:auto;
-    text-align:left;
-    font-size:28px;
-    font-weight:4rem;
-    
-    
-  
-}
-
-/* Center */
-.logo_container{
-    width:34%;
-    margin-left: 4rem;
-    display:flex;
-    justify-content:center;
-    font-size:2rem;
-}
-
-.Imax_home{
-    height:36px;
-    font-size:2rem;
-}
-
-/* Right */
-.action_bar{
-    width:33%;
-    display:flex;
-    justify-content:flex-end;
-    align-items:center;
-    gap: 1px;
-  
-    padding: 3.rem 0rem;
-    
-}
-
-.action_bar .material-symbols-outlined{
-  display: flex;
-    font-size:30px !important;
-    gap: 1rem;!important
-    
-}
-
-.action_name{
-    display:none;
-}
-.nav_bar{
-  display:none;
-  
-}
-.action_container{
-  padding: 1.rem 0.6rem;
-  padding-top: 1.5rem;
-  
-  width: 40px;
-  
-  
-  
-}
-
-.bag-item-count {
-    background-color: #f16565;
-    white-space: nowrap;
-    text-align: center;
-    line-height: 22px;
-    padding: 0 6px;
-    height: 18px;
-    position: relative;
-    border-radius: 50%;
-    font-size: 12px;
-    color: #fff;
-    left: 13px;
-    top: -44px;
-    font-weight: 700;
-    cursor: pointer;
-    visibility: hidden;
-}
-
-.stat-number {
-  width: 100%;
-    font-size: 2.5rem;
-    color: #f54e77;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-.footer-subscribe {
-  display:none;
-  width:100%;
-}
-/* Search */
-.mobile-search{
-    margin:10px 12px;
-    padding:10px 14px;
-    border-radius:25px;
-    background:#f5f5f5;
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.mobile-search input{
-    width:100%;
-    border:none;
-    background:transparent;
-    outline:none;
-    font-size:14px;
-}
-}
 /* =========================================
    MOBILE RESPONSIVENESS & OVERFLOW FIXES
    ========================================= */
@@ -506,7 +387,120 @@ html, body {
     overflow-x: hidden;
 }
 
-/* 2. Restore mobile layouts overridden by premium styles */
+/* 2. Tablet & Small Devices (768px and below) */
+@media (max-width: 768px) {
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        padding: 0 12px;
+        width: 100%;
+    }
+
+    /* Left - Menu Button */
+    .menu-btn {
+        width: auto;
+        text-align: left;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    /* Center - Logo Container */
+    .logo_container {
+        width: 34%;
+        margin-left: 4rem;
+        display: flex;
+        justify-content: center;
+        font-size: 2rem;
+    }
+
+    .Imax_home {
+        height: 36px;
+        font-size: 2rem;
+    }
+
+    /* Right - Action Bar */
+    .action_bar {
+        width: 33%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    .action_bar .material-symbols-outlined {
+        display: flex;
+        font-size: 30px !important;
+        gap: 1rem;
+    }
+
+    .action_name {
+        display: none;
+    }
+
+    .nav_bar {
+        display: none;
+    }
+
+    .action_container {
+        padding: 1rem 0.6rem;
+        width: 40px;
+    }
+
+    .bag-item-count {
+        background-color: #f16565;
+        white-space: nowrap;
+        text-align: center;
+        line-height: 22px;
+        padding: 0 6px;
+        height: 18px;
+        position: relative;
+        border-radius: 50%;
+        font-size: 12px;
+        color: #fff;
+        left: 13px;
+        top: -44px;
+        font-weight: 700;
+        cursor: pointer;
+        visibility: hidden;
+    }
+
+    .stat-number {
+        width: 100%;
+        font-size: 2.5rem;
+        color: #f54e77;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .footer-subscribe {
+        display: none;
+        width: 100%;
+    }
+
+    /* Search */
+    .mobile-search {
+        margin: 10px 12px;
+        padding: 10px 14px;
+        border-radius: 25px;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-search input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 14px;
+    }
+}
+
+/* 3. Medium Devices (901px and below) */
 @media (max-width: 900px) {
     /* Shrink the massive header padding */
     header {
@@ -515,7 +509,7 @@ html, body {
 
     /* Prevent grid cards from forcing a 350px minimum width */
     .art-grid.grid-view {
-        grid-template-columns: 2fr;
+        grid-template-columns: 1fr;
         gap: 1.5rem;
     }
 
@@ -532,5 +526,54 @@ html, body {
 
     .exp, .view {
         width: 100%;
+    }
+
+    /* Adjust badges for medium screens */
+    .badges {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stack stats on smaller screens */
+    .gallery-stats {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* 4. Large Tablets (600px and below) */
+@media (max-width: 600px) {
+    .dis, .ext {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+    }
+
+    .soul {
+        font-size: clamp(1.2rem, 2.5vw, 2rem);
+    }
+
+    .care {
+        font-size: clamp(0.9rem, 1.8vw, 1rem);
+    }
+
+    .about-gallery {
+        margin: 3rem 1rem;
+        padding: 2rem 1rem;
+    }
+
+    .about-gallery h2 {
+        font-size: 2rem;
+    }
+
+    .about-gallery p {
+        font-size: 1.1rem;
+    }
+
+    .btns {
+        margin: 2rem 0;
+    }
+
+    .exp, .view {
+        height: 50px;
+        font-size: 14px;
+        padding: 0 1.5rem;
     }
 }
