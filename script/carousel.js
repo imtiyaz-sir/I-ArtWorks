@@ -26,6 +26,7 @@ class ArtCarousel {
         this.setupProgressBar();
         this.setupKeyboardNav();
         this.setupSwipeGestures();
+        document.addEventListener('visibilitychange', () => this.handleVisibility());
         
         // Show first slide
         this.showSlide(0);
@@ -166,13 +167,16 @@ class ArtCarousel {
             
             playPauseBtn.addEventListener('click', () => {
                 if (this.isAutoplayEnabled) {
+                    this.isAutoplayEnabled = false;
                     this.stopAutoplay();
                     icon.textContent = 'play_arrow';
+                    playPauseBtn.setAttribute('aria-label', 'Play slideshow');
                 } else {
+                    this.isAutoplayEnabled = true;
                     this.startAutoplay();
                     icon.textContent = 'pause';
+                    playPauseBtn.setAttribute('aria-label', 'Pause slideshow');
                 }
-                this.isAutoplayEnabled = !this.isAutoplayEnabled;
             });
         }
     }
@@ -207,6 +211,8 @@ class ArtCarousel {
 
     setupKeyboardNav() {
         document.addEventListener('keydown', (e) => {
+            const tag = (e.target && e.target.tagName) || '';
+            if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || e.target.isContentEditable) return;
             if (e.key === 'ArrowLeft') {
                 this.prevSlide();
                 this.resetAutoplay();
@@ -269,6 +275,10 @@ class ArtCarousel {
                     this.prevSlide();
                 }
                 this.resetAutoplay();
+                // swallow the click that follows a drag so the link doesn't open
+                const swallow = ev => { ev.preventDefault(); ev.stopPropagation(); };
+                this.container.addEventListener('click', swallow, { capture: true, once: true });
+                setTimeout(() => this.container.removeEventListener('click', swallow, true), 0);
             }
         });
 
@@ -302,6 +312,11 @@ class ArtCarousel {
         }
     }
 
+    handleVisibility() {
+        if (document.hidden) { this.stopAutoplay(); }
+        else if (this.isAutoplayEnabled) { this.startAutoplay(); }
+    }
+
     destroy() {
         this.stopAutoplay();
         if (this.progressInterval) {
@@ -310,52 +325,20 @@ class ArtCarousel {
     }
 }
 
-// Featured artworks for carousel
-const carouselArtworks = [
-    {
-        id: 1,
-        image: '/I-ArtWorks/images/6.jpg',
-        title: 'Ethereal Dreams',
-        artist: 'Sophia Chen',
-        description: 'A mesmerizing blend of colors and emotions captured on canvas',
-        price: '₹45,000',
-        link: '#'
-    },
-    {
-        id: 2,
-        image: '/I-ArtWorks/images/mu.jpg',
-        title: 'Urban Symphony',
-        artist: 'Marcus Rivera',
-        description: 'Contemporary expression of city life through abstract forms',
-        price: '₹38,000',
-        link: '#'
-    },
-    {
-        id: 3,
-        image: '/I-ArtWorks/images/cn.jpg',
-        title: 'Golden Serenity',
-        artist: 'Aisha Patel',
-        description: 'Peaceful moments captured in warm, luminous tones',
-        price: '₹52,000',
-        link: '#'
-    },
-    {
-        id: 4,
-        image: '/I-ArtWorks/images/bd.jpg',
-        title: 'Midnight Reflections',
-        artist: 'James Morrison',
-        description: 'Deep contemplation expressed through bold strokes and shadows',
-        price: '₹41,000',
-        link: '#'
-    }
-];
+// Slides come from the real product data (data/artworks.js → carouselIds)
+function getCarouselArtworks() {
+    return (typeof carouselIds !== 'undefined' ? carouselIds : [])
+        .map(getArtwork).filter(Boolean);
+}
 
 // Generate carousel HTML
 function generateCarouselHTML() {
     const carouselSection = document.getElementById('featuredCarousel');
-    if (!carouselSection) return;
+    if (!carouselSection) return false;
+    const slides = getCarouselArtworks();
+    if (slides.length === 0) { carouselSection.style.display = 'none'; return false; }
 
-    const html = `
+    carouselSection.innerHTML = `
         <div class="carousel-header">
             <h2 class="carousel-title">Featured Masterpieces</h2>
             <p class="carousel-subtitle">Discover our handpicked collection of extraordinary artworks</p>
@@ -363,31 +346,33 @@ function generateCarouselHTML() {
 
         <div class="carousel-wrapper">
             <div class="carousel-container" style="cursor: grab;">
-                ${carouselArtworks.map(art => `
+                ${slides.map((art, i) => `
                     <div class="carousel-slide">
-                        <img src="${art.image}" alt="${art.title}">
+                        <img src="${assetUrl(art.image)}" alt="${escapeHtml(art.title)}" draggable="false"
+                             ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"
+                             onerror="this.onerror=null;this.src=IMG_PLACEHOLDER">
                         <div class="carousel-overlay">
-                            <h3 class="carousel-artwork-title">${art.title}</h3>
-                            <p class="carousel-artist">by ${art.artist}</p>
-                            <p class="carousel-description">${art.description}</p>
-                            <div class="carousel-price">${art.price}</div>
-                            <a href="${art.link}" class="carousel-cta">View Artwork</a>
+                            <h3 class="carousel-artwork-title">${escapeHtml(art.title)}</h3>
+                            <p class="carousel-artist">by ${escapeHtml(art.artist)}</p>
+                            <p class="carousel-description">${escapeHtml(art.description)}</p>
+                            <div class="carousel-price">${formatCurrency(salePrice(art))}</div>
+                            <a href="${pageUrl('pages/product-detail.html')}?id=${art.id}" class="carousel-cta">View Artwork</a>
                         </div>
                     </div>
                 `).join('')}
             </div>
 
-            <button class="carousel-nav carousel-prev">
+            <button type="button" class="carousel-nav carousel-prev" aria-label="Previous slide">
                 <span class="material-symbols-outlined">chevron_left</span>
             </button>
-            <button class="carousel-nav carousel-next">
+            <button type="button" class="carousel-nav carousel-next" aria-label="Next slide">
                 <span class="material-symbols-outlined">chevron_right</span>
             </button>
 
             <div class="carousel-indicators"></div>
 
             <div class="carousel-controls">
-                <button class="carousel-control-btn" id="carouselPlayPause">
+                <button type="button" class="carousel-control-btn" id="carouselPlayPause" aria-label="Pause slideshow">
                     <span class="material-symbols-outlined">pause</span>
                 </button>
             </div>
@@ -399,21 +384,13 @@ function generateCarouselHTML() {
 
         <div class="carousel-thumbnails"></div>
     `;
-
-    carouselSection.innerHTML = html;
+    return true;
 }
 
 // Initialize carousel when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    generateCarouselHTML();
-    
-    // Wait a bit for HTML to render
-    setTimeout(() => {
-        window.artCarousel = new ArtCarousel({
-            autoplay: true,
-            autoplayDelay: 5000
-        });
-    }, 100);
+    if (!generateCarouselHTML()) return;
+    window.artCarousel = new ArtCarousel({ autoplay: true, autoplayDelay: 5000 });
 });
 
 // Cleanup on page unload

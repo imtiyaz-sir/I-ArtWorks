@@ -1,423 +1,275 @@
-// Configuration - Replace with your actual WhatsApp number
-const WHATSAPP_NUMBER = '+916006202075'; // Format: country code + number (no + or -)
-const BUSINESS_NAME = 'I-ArtWorks';
+// ═══════════════════════════════════════════════════════════════
+// product-detail.js — single painting page (?id=…): details, cart,
+// buy now, wishlist, zoom, share, WhatsApp enquiry, similar works,
+// customer reviews (stored locally until the backend exists).
+// ═══════════════════════════════════════════════════════════════
 
 let currentProduct = null;
-let isInWishlist = false;
+const REVIEWS_KEY = 'iartworks_reviews';
 
-// Load product on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadProduct();
-    setupAccordion();
-    setupWhatsAppIntegration();
-    displayBagIcon();
+document.addEventListener('DOMContentLoaded', () => {
+  setupAccordion();
+  loadProduct();
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImageZoom(); });
+  document.addEventListener('store:changed', () => { if (currentProduct) refreshProductButtons(); });
 });
 
-// Get product ID from URL
 function getProductIdFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return parseInt(urlParams.get('id')) || 1; // Default to first product
+  const raw = getQueryParam('id');
+  return raw === null ? NaN : parseInt(raw, 10);
 }
 
-// Load product details
 function loadProduct() {
-    const productId = getProductIdFromURL();
-    currentProduct = artworks.find(art => art.id === productId);
-
-    if (!currentProduct) {
-        // Redirect to gallery if product not found
-        window.location.href = '../index.html#gallery';
-        return;
-    }
-
-    displayProductDetails();
-    loadSimilarProducts();
-    checkWishlistStatus();
+  currentProduct = getArtwork(getProductIdFromURL());
+  if (!currentProduct) { showNotFound(); return; }
+  displayProductDetails();
+  bindProductEvents();
+  loadSimilarProducts();
+  renderReviews();
+  refreshProductButtons();
 }
 
-// Display product details
+function showNotFound() {
+  document.title = 'Artwork not found - I-ArtWorks';
+  const main = document.querySelector('main');
+  main.innerHTML = `
+    <div class="not-found-box">
+      <div class="nf-icon">🖼️</div>
+      <h1>We couldn't find that artwork</h1>
+      <p>It may have been sold or the link is incorrect.</p>
+      <a class="btn-add-to-cart nf-btn" href="${pageUrl('index.html')}#gallery">Browse the Gallery</a>
+    </div>`;
+}
+
+function starsHTML(rating) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += rating >= i ? '<i class="fa-solid fa-star"></i>'
+          : rating >= i - 0.5 ? '<i class="fa-solid fa-star-half-stroke"></i>'
+          : '<i class="fa-regular fa-star"></i>';
+  }
+  return html;
+}
+
 function displayProductDetails() {
-    const art = currentProduct;
-    
-    // Calculate prices
-    let discount = (art.original_price * art.discount_percentage) / 100;
-    let currentPrice = Math.round(art.original_price - discount);
-    let savings = Math.round(discount);
+  const art = currentProduct;
+  const price = salePrice(art);
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
 
-    // Update page title and meta
-    document.getElementById('pageTitle').textContent = `${art.title} - ${art.artist} | I-ArtWorks`;
-    document.getElementById('pageDescription').content = `${art.title} by ${art.artist}. ${art.medium} on ${art.size}. Buy original artwork online.`;
+  document.title = `${art.title} - ${art.artist} | I-ArtWorks`;
+  const metaDesc = document.getElementById('pageDescription');
+  if (metaDesc) metaDesc.content = `${art.title} by ${art.artist}. ${art.medium}, ${art.size}. Buy original artwork online.`;
 
-    // Update breadcrumb
-    document.getElementById('breadcrumbTitle').textContent = art.title;
+  set('breadcrumbTitle', art.title);
+  const main = document.getElementById('mainImage');
+  main.src = assetUrl(art.image); main.alt = art.title;
+  main.onerror = () => { main.onerror = null; main.src = IMG_PLACEHOLDER; };
 
-    // Update main image
-    document.getElementById('mainImage').src = art.image;
-    document.getElementById('mainImage').alt = art.title;
+  const badge = document.getElementById('imageBadge');
+  badge.textContent = art.label; badge.className = `image-badge ${labelClass(art.label)}`;
 
-    // Update badge
-    const badge = document.getElementById('imageBadge');
-    badge.textContent = art.label;
-    badge.className = `image-badge label-${art.label.toLowerCase()}`;
+  document.getElementById('thumbnailGallery').innerHTML =
+    `<div class="thumbnail active" role="button" tabindex="0" aria-label="Main view">${imgTag(art.image, art.title)}</div>`;
 
-    // Generate thumbnails (using same image for demo - you can add more images)
-    const thumbnailGallery = document.getElementById('thumbnailGallery');
-    thumbnailGallery.innerHTML = `
-        <div class="thumbnail active" onclick="changeMainImage('${art.image}', this)">
-            <img src="${art.image}" alt="${art.title}">
-        </div>
-    `;
+  set('productTitle', art.title);
+  set('artistName', art.artist);
+  set('currentPrice', price.toLocaleString('en-IN'));
+  set('originalPrice', art.original_price.toLocaleString('en-IN'));
+  set('discountPercent', art.discount_percentage);
+  set('savingsAmount', savingsOf(art).toLocaleString('en-IN'));
+  // hide discount UI when there is none
+  const noDiscount = !(art.discount_percentage > 0);
+  document.querySelector('.original-price')?.toggleAttribute('hidden', noDiscount);
+  document.querySelector('.discount-badge')?.toggleAttribute('hidden', noDiscount);
+  document.querySelector('.savings-text')?.toggleAttribute('hidden', noDiscount);
 
-    // Update product details
-    document.getElementById('productTitle').textContent = art.title;
-    document.getElementById('artistName').textContent = art.artist;
-    
-    // Update prices
-    document.getElementById('currentPrice').textContent = currentPrice.toLocaleString();
-    document.getElementById('originalPrice').textContent = art.original_price.toLocaleString();
-    document.getElementById('discountPercent').textContent = art.discount_percentage;
-    document.getElementById('savingsAmount').textContent = savings.toLocaleString();
+  set('productSize', art.size);
+  set('productMedium', art.medium);
+  set('productStyle', art.category);
+  set('deliveryDate', deliveryDateFor(art));
+  set('returnPeriod', `${art.return_period} Days Return`);
+  set('returnPeriodText', `${art.return_period} days`);
+  set('productDescription', art.description || '');
 
-    // Update product info
-    document.getElementById('productSize').textContent = art.size;
-    document.getElementById('productMedium').textContent = art.medium;
-    document.getElementById('productStyle').textContent = art.meta || 'ABSTRACT';
-    document.getElementById('deliveryDate').textContent = art.delivery_date;
+  // ratings
+  const ratingStars = document.querySelector('.ratings-section .stars'); if (ratingStars) ratingStars.innerHTML = starsHTML(art.rating);
+  set('ratingText', `${art.rating} (${art.reviews} reviews)`);
+  set('ratingNumber', art.rating.toFixed(1));
+  set('ratingBasedOn', `Based on ${art.reviews} reviews`);
+  const big = document.querySelector('.rating-stars-large'); if (big) big.innerHTML = starsHTML(art.rating);
 
-    // Update return period
-    document.getElementById('returnPeriod').textContent = `${art.return_period} Days Return`;
-    document.getElementById('returnPeriodText').textContent = `${art.return_period} days`;
-
-    // Add event listeners
-    document.getElementById('addToCartBtn').addEventListener('click', handleAddToCart);
-    document.getElementById('buyNowBtn').addEventListener('click', handleBuyNow);
+  // links that must work without JS handlers
+  const artistBtn = document.getElementById('viewArtistBtn');
+  if (artistBtn) artistBtn.href = `${pageUrl('index.html')}?q=${encodeURIComponent(art.artist)}#gallery`;
+  const wa = document.getElementById('whatsappFloat'); if (wa) { wa.href = whatsappUrl(`Hi ${SITE_CONFIG.businessName}! I'd like to know more about your art collection.`); wa.target = '_blank'; wa.rel = 'noopener'; }
 }
 
-// Change main image
-function changeMainImage(imageSrc, thumbnail) {
-    document.getElementById('mainImage').src = imageSrc;
-    
-    // Update active thumbnail
-    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-    thumbnail.classList.add('active');
+function bindProductEvents() {
+  const art = currentProduct;
+  document.getElementById('addToCartBtn').addEventListener('click', () => { addCart(art.id); });
+  document.getElementById('buyNowBtn').addEventListener('click', () => {
+    if (!art.in_stock) { showNotification('This artwork is currently sold out.', 'warning'); return; }
+    Store.cart.add(art.id); location.href = pageUrl('pages/bag.html');
+  });
+  document.getElementById('productWishBtn').addEventListener('click', e => toggleWish(art.id, e.currentTarget));
+  document.getElementById('whatsappBtn').addEventListener('click', () => {
+    const msg = `Hi ${SITE_CONFIG.businessName}! 👋\n\nI'm interested in this artwork:\n\n*${art.title}*\nby ${art.artist}\n\n📐 Size: ${art.size}\n🎨 Medium: ${art.medium}\n💰 Price: ${formatCurrency(salePrice(art))}\n\nCan you provide more details?\n\nLink: ${location.href}`;
+    window.open(whatsappUrl(msg), '_blank', 'noopener');
+  });
+  const mainWrap = document.querySelector('.main-image-container');
+  document.getElementById('mainImage').addEventListener('click', openImageZoom);
+  document.querySelector('.zoom-btn')?.addEventListener('click', e => { e.stopPropagation(); openImageZoom(); });
+  document.getElementById('imageZoomModal')?.addEventListener('click', e => { if (e.target.id === 'imageZoomModal') closeImageZoom(); });
+  document.querySelector('.write-review-btn')?.addEventListener('click', openReviewModal);
 }
 
-// Open image zoom
+// Keeps button labels/state in sync (cart/wishlist changed here or in another tab)
+function refreshProductButtons() {
+  const art = currentProduct;
+  const inCart = Store.cart.has(art.id);
+  const addBtn = document.getElementById('addToCartBtn');
+  if (addBtn) {
+    addBtn.innerHTML = `<i class="fa-solid fa-shopping-cart"></i> ${!art.in_stock ? 'Sold Out' : inCart ? 'In Your Bag' : 'Add to Cart'}`;
+    addBtn.disabled = !art.in_stock;
+  }
+  const buy = document.getElementById('buyNowBtn'); if (buy) buy.disabled = !art.in_stock;
+  const wish = document.getElementById('productWishBtn');
+  if (wish) {
+    const on = Store.wishlist.has(art.id);
+    wish.classList.toggle('active', on); wish.setAttribute('aria-pressed', on);
+    wish.innerHTML = `<i class="${on ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
+  }
+}
+
+// ── Zoom ─────────────────────────────────────────────────────────
 function openImageZoom() {
-    const modal = document.getElementById('imageZoomModal');
-    const zoomedImage = document.getElementById('zoomedImage');
-    zoomedImage.src = document.getElementById('mainImage').src;
-    modal.style.display = 'block';
+  const modal = document.getElementById('imageZoomModal'); if (!modal) return;
+  document.getElementById('zoomedImage').src = document.getElementById('mainImage').src;
+  modal.style.display = 'block'; document.body.classList.add('no-scroll');
 }
-
-// Close image zoom
 function closeImageZoom() {
-    document.getElementById('imageZoomModal').style.display = 'none';
+  const modal = document.getElementById('imageZoomModal');
+  if (modal && modal.style.display === 'block') { modal.style.display = 'none'; document.body.classList.remove('no-scroll'); }
 }
 
-// Setup accordion
+// ── Accordion ────────────────────────────────────────────────────
 function setupAccordion() {
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-            const accordionItem = this.parentElement;
-            const isActive = accordionItem.classList.contains('active');
-            
-            // Close all accordion items
-            document.querySelectorAll('.accordion-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Open clicked item if it wasn't active
-            if (!isActive) {
-                accordionItem.classList.add('active');
-            }
-        });
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.setAttribute('aria-expanded', header.parentElement.classList.contains('active'));
+    header.addEventListener('click', function () {
+      const item = this.parentElement; const wasActive = item.classList.contains('active');
+      document.querySelectorAll('.accordion-item').forEach(i => { i.classList.remove('active'); i.querySelector('.accordion-header')?.setAttribute('aria-expanded', 'false'); });
+      if (!wasActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
     });
+  });
 }
 
-// Handle Add to Cart
-function handleAddToCart() {
-    if (!currentProduct) return;
-
-    // Check if already in cart
-    let iartwork = JSON.parse(localStorage.getItem('iartwork') || '[]');
-    
-    if (iartwork.includes(currentProduct.id)) {
-        showNotification('Item already in cart!', 'info');
-        return;
-    }
-
-    iartwork.push(currentProduct.id);
-    localStorage.setItem('iartwork', JSON.stringify(iartwork));
-    displayBagIcon();
-    showNotification('Added to cart successfully!', 'success');
-}
-
-// Handle Buy Now
-function handleBuyNow() {
-    if (!currentProduct) return;
-
-    // Add to cart if not already there
-    let iartwork = JSON.parse(localStorage.getItem('iartwork') || '[]');
-    
-    if (!iartwork.includes(currentProduct.id)) {
-        iartwork.push(currentProduct.id);
-        localStorage.setItem('iartwork', JSON.stringify(iartwork));
-    }
-
-    // Redirect to bag page
-    window.location.href = 'bag.html';
-}
-
-// Toggle Wishlist
-function toggleWishlist() {
-    const wishlistBtn = document.getElementById('wishlistBtn');
-    isInWishlist = !isInWishlist;
-    
-    if (isInWishlist) {
-        wishlistBtn.classList.add('active');
-        showNotification('Added to wishlist!', 'success');
-        // Save to localStorage
-        let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-        if (!wishlist.includes(currentProduct.id)) {
-            wishlist.push(currentProduct.id);
-            localStorage.setItem('wishlist', JSON.stringify(wishlist));
-        }
-    } else {
-        wishlistBtn.classList.remove('active');
-        showNotification('Removed from wishlist', 'info');
-        // Remove from localStorage
-        let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-        wishlist = wishlist.filter(id => id !== currentProduct.id);
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    }
-}
-
-// Check wishlist status
-function checkWishlistStatus() {
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    isInWishlist = wishlist.includes(currentProduct.id);
-    
-    if (isInWishlist) {
-        document.getElementById('wishlistBtn').classList.add('active');
-    }
-}
-
-// Load similar products
+// ── Similar works (same category first) ──────────────────────────
 function loadSimilarProducts() {
-    const similarGrid = document.getElementById('similarGrid');
-    
-    // Get 4 random products excluding current
-    const similarProducts = artworks
-        .filter(art => art.id !== currentProduct.id)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 4);
-
-    let html = '';
-    similarProducts.forEach(art => {
-        let discount = (art.original_price * art.discount_percentage) / 100;
-        let price = Math.round(art.original_price - discount);
-
-        html += `
-        <div class="similar-item" onclick="navigateToProduct(${art.id})">
-            <img src="${art.image}" alt="${art.title}">
-            <div class="similar-item-details">
-                <h4>${art.title}</h4>
-                <p class="similar-item-artist">${art.artist}</p>
-                <p class="similar-item-price">₹${price.toLocaleString()}</p>
-            </div>
-        </div>`;
-    });
-
-    similarGrid.innerHTML = html;
+  const grid = document.getElementById('similarGrid'); if (!grid) return;
+  const others = artworks.filter(a => a.id !== currentProduct.id);
+  const same = others.filter(a => a.category === currentProduct.category);
+  const rest = others.filter(a => a.category !== currentProduct.category).sort((a, b) => b.rating - a.rating);
+  const picks = [...same, ...rest].slice(0, 4);
+  grid.innerHTML = picks.map(a => `
+    <a class="similar-item" href="${pageUrl('pages/product-detail.html')}?id=${a.id}">
+      ${imgTag(a.image, a.title)}
+      <div class="similar-item-details">
+        <h4>${escapeHtml(a.title)}</h4>
+        <p class="similar-item-artist">${escapeHtml(a.artist)}</p>
+        <p class="similar-item-price">${formatCurrency(salePrice(a))}</p>
+      </div>
+    </a>`).join('');
 }
 
-// Navigate to product
-function navigateToProduct(productId) {
-    window.location.href = `product-detail.html?id=${productId}`;
-}
-
-// View artist profile
-function viewArtistProfile() {
-    showNotification('Artist profiles coming soon!', 'info');
-    // In future: window.location.href = `artist-profile.html?artist=${currentProduct.artist}`;
-}
-
-// ========== WhatsApp Integration ==========
-
-function setupWhatsAppIntegration() {
-    // Main WhatsApp inquiry button
-    const whatsappBtn = document.getElementById('whatsappBtn');
-    if (whatsappBtn) {
-        whatsappBtn.addEventListener('click', sendProductInquiry);
-    }
-
-    // Floating WhatsApp button
-    const whatsappFloat = document.getElementById('whatsappFloat');
-    if (whatsappFloat) {
-        whatsappFloat.addEventListener('click', function(e) {
-            e.preventDefault();
-            sendGeneralInquiry();
-        });
-    }
-}
-
-// Send product-specific inquiry via WhatsApp
-function sendProductInquiry() {
-    if (!currentProduct) return;
-
-    const discount = (currentProduct.original_price * currentProduct.discount_percentage) / 100;
-    const price = Math.round(currentProduct.original_price - discount);
-
-    const message = `Hi ${BUSINESS_NAME}! 👋
-
-I'm interested in this artwork:
-
-*${currentProduct.title}*
-by ${currentProduct.artist}
-
-📐 Size: ${currentProduct.size}
-🎨 Medium: ${currentProduct.medium}
-💰 Price: ₹${price.toLocaleString()}
-
-Can you provide more details?
-
-Link: ${window.location.href}`;
-
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
-}
-
-// Send general inquiry via WhatsApp
-function sendGeneralInquiry() {
-    const message = `Hi ${BUSINESS_NAME}! 👋
-
-I'm browsing your art gallery and would like to know more about your collection.
-
-Can you help me?`;
-
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
-}
-
-// ========== Share Functions ==========
-
+// ── Share ────────────────────────────────────────────────────────
 function shareOnWhatsApp() {
-    if (!currentProduct) return;
-
-    const message = `Check out this beautiful artwork! 🎨
-
-*${currentProduct.title}*
-by ${currentProduct.artist}
-
-${window.location.href}`;
-
-    const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
+  const a = currentProduct; if (!a) return;
+  window.open(`https://wa.me/?text=${encodeURIComponent(`Check out this beautiful artwork! 🎨\n\n*${a.title}*\nby ${a.artist}\n\n${location.href}`)}`, '_blank', 'noopener');
 }
-
 function shareOnFacebook() {
-    const facebookURL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
-    window.open(facebookURL, '_blank', 'width=600,height=400');
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`, '_blank', 'noopener,width=600,height=400');
 }
-
 function shareOnTwitter() {
-    const text = `Check out "${currentProduct.title}" by ${currentProduct.artist} on I-ArtWorks!`;
-    const twitterURL = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-    window.open(twitterURL, '_blank', 'width=600,height=400');
+  const a = currentProduct; if (!a) return;
+  const text = `Check out "${a.title}" by ${a.artist} on I-ArtWorks!`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(location.href)}`, '_blank', 'noopener,width=600,height=400');
+}
+async function copyLink() {
+  const ok = await copyToClipboard(location.href);
+  showNotification(ok ? 'Link copied to clipboard!' : 'Could not copy the link — please copy it from the address bar.', ok ? 'success' : 'error');
 }
 
-function copyLink() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        showNotification('Link copied to clipboard!', 'success');
-    }).catch(() => {
-        showNotification('Failed to copy link', 'error');
-    });
-}
+// ── Reviews (local until backend) ────────────────────────────────
+function allReviews() { const r = getFromStorage(REVIEWS_KEY, {}); return r && typeof r === 'object' ? r : {}; }
 
-// ========== Review Functions ==========
+function renderReviews() {
+  const list = document.querySelector('.reviews-list'); if (!list || !currentProduct) return;
+  list.querySelectorAll('.review-item[data-user-review]').forEach(n => n.remove());
+  const mine = (allReviews()[currentProduct.id] || []).slice().reverse();
+  const html = mine.map(r => `
+    <div class="review-item" data-user-review="1">
+      <div class="review-header">
+        <div class="reviewer-info">
+          <div class="reviewer-avatar">${escapeHtml((r.name || '?')[0].toUpperCase())}</div>
+          <div><p class="reviewer-name">${escapeHtml(r.name)}</p><div class="review-stars">${starsHTML(r.rating)}</div></div>
+        </div>
+        <span class="review-date">${formatDate(r.date)}</span>
+      </div>
+      <p class="review-text">${escapeHtml(r.text)}</p>
+    </div>`).join('');
+  list.insertAdjacentHTML('afterbegin', html);
+}
 
 function openReviewModal() {
-    showNotification('Review submission feature coming soon!', 'info');
-    // In future: Open a modal with review form
+  authManager.requireLogin(() => {
+    const old = document.getElementById('reviewModal'); if (old) old.remove();
+    const modal = document.createElement('div');
+    modal.id = 'reviewModal'; modal.className = 'modal show'; modal.dataset.removeOnClose = '1';
+    modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `
+      <div class="modal-content checkout-content">
+        <span class="modal-close" role="button" tabindex="0" aria-label="Close" id="reviewClose">&times;</span>
+        <h2>Write a Review</h2>
+        <p class="checkout-sub">${escapeHtml(currentProduct.title)}</p>
+        <form id="reviewForm" novalidate>
+          <div class="form-group">
+            <label>Your rating *</label>
+            <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Rating">
+              ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="star-btn" data-star="${n}" role="radio" aria-checked="false" aria-label="${n} star${n > 1 ? 's' : ''}">★</button>`).join('')}
+            </div>
+            <input type="hidden" name="rating" value="0">
+          </div>
+          <div class="form-group"><label for="reviewText">Your review *</label>
+            <textarea id="reviewText" name="text" rows="4" maxlength="600" placeholder="What did you love about this artwork?"></textarea></div>
+          <button type="submit" class="submit-commission checkout-submit">Submit Review</button>
+        </form>
+      </div>`;
+    document.body.appendChild(modal);
+    const close = () => modal.remove();
+    modal.querySelector('#reviewClose').addEventListener('click', close);
+    const form = modal.querySelector('#reviewForm');
+    const picker = modal.querySelector('#starPicker');
+    picker.addEventListener('click', e => {
+      const b = e.target.closest('[data-star]'); if (!b) return;
+      const n = Number(b.dataset.star); form.elements.rating.value = n;
+      picker.querySelectorAll('.star-btn').forEach(s => { const on = Number(s.dataset.star) <= n; s.classList.toggle('on', on); s.setAttribute('aria-checked', Number(s.dataset.star) === n); });
+      setFieldError(form.elements.rating, '');
+    });
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const rating = Number(form.elements.rating.value); const text = form.elements.text.value.trim();
+      let ok = true;
+      if (!rating) { setFieldError(form.elements.rating, 'Please choose a star rating.'); ok = false; }
+      if (text.length < 10) { setFieldError(form.elements.text, 'Please write at least 10 characters.'); ok = false; }
+      if (!ok) return;
+      const user = authManager.getCurrentUser();
+      const reviews = allReviews(); const list = reviews[currentProduct.id] || [];
+      const existing = list.findIndex(r => r.userId === user.id);
+      const entry = { userId: user.id, name: user.fullName, rating, text, date: new Date().toISOString() };
+      if (existing >= 0) list[existing] = entry; else list.push(entry);
+      reviews[currentProduct.id] = list; saveToStorage(REVIEWS_KEY, reviews);
+      close(); renderReviews(); showNotification('Thank you! Your review has been posted.', 'success');
+    });
+  }, 'Please sign in to write a review.');
 }
-
-// ========== Helper Functions ==========
-
-function showNotification(message, type = 'success') {
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-
-    let bgColor = '#2bb673';
-    if (type === 'error') bgColor = '#f54e77';
-    if (type === 'info') bgColor = '#3498db';
-
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${bgColor};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-        max-width: 350px;
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-function displayBagIcon() {
-    let iItemsStr = localStorage.getItem('iartwork');
-    let iartwork = iItemsStr ? JSON.parse(iItemsStr) : [];
-    let bagItemCountElement = document.querySelector('.bag-item-count');
-    
-    if (bagItemCountElement) {
-        if (iartwork.length > 0) {
-            bagItemCountElement.style.visibility = 'visible';
-            bagItemCountElement.innerText = iartwork.length;
-        } else {
-            bagItemCountElement.style.visibility = 'hidden';
-        }
-    }
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('imageZoomModal');
-    if (event.target === modal) {
-        closeImageZoom();
-    }
-}
-
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(400px); opacity: 0; }
-    }
-    
-    .label-new { background: linear-gradient(135deg, #38d39f, #2bb673); }
-    .label-featured { background: linear-gradient(135deg, #f54e77, #ff7ca3); }
-    .label-limited { background: linear-gradient(135deg, #5a6bf4, #8796ff); }
-    .label-curated { background: linear-gradient(135deg, #8e2de2, #ffcc70); }
-`;
-document.head.appendChild(style);

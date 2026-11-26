@@ -1,443 +1,273 @@
-let bagItemsObjects;
+// ═══════════════════════════════════════════════════════════════
+// bag.js — shopping bag page: list, remove, clear, promo codes,
+// recommendations, checkout (address → order → confirmation).
+// All data goes through Store (store.js).
+// ═══════════════════════════════════════════════════════════════
+
 let appliedPromoCode = null;
-let promoDiscount = 0;
 
-onLoad();
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.querySelector('.bag-page')) return;
+  bindBagEvents();
+  renderBag();
+  document.addEventListener('store:changed', () => { /* other tab changed the cart */ renderBag(); });
+});
 
-function onLoad() {
-    loadbagItemsObjects();
-    displayBagItems();
-    displayBagSummary();
-    displayBagIcon();
-    setupEventListeners();
-    showRecommendations();
+function currentBagItems() { return Store.cart.items(); }
+
+function renderBag() {
+  const items = currentBagItems();
+  renderBagItems(items);
+  renderBagSummary(items);
+  renderRecommendations(items);
 }
 
-function setupEventListeners() {
-    // Place order button
-    const placeOrderBtn = document.querySelector('.btn-place-order');
-    if (placeOrderBtn) {
-        placeOrderBtn.addEventListener('click', handlePlaceOrder);
-    }
+// ── Items ────────────────────────────────────────────────────────
+function renderBagItems(items) {
+  const container = document.querySelector('.bag-Items-container');
+  const emptyCart = document.getElementById('emptyCart');
+  const itemCount = document.getElementById('itemCount');
+  const clearBtn = document.getElementById('clearCartBtn');
+  if (itemCount) itemCount.textContent = `(${items.length} ${items.length === 1 ? 'item' : 'items'})`;
+  if (clearBtn) clearBtn.style.display = items.length ? 'inline-flex' : 'none';
 
-    // Clear cart button
-    const clearCartBtn = document.getElementById('clearCartBtn');
-    if (clearCartBtn) {
-        clearCartBtn.addEventListener('click', handleClearCart);
-    }
-
-    // Promo code
-    const applyPromoBtn = document.getElementById('applyPromoBtn');
-    if (applyPromoBtn) {
-        applyPromoBtn.addEventListener('click', applyPromoCode);
-    }
-
-    // Allow Enter key for promo code
-    const promoInput = document.getElementById('promoInput');
-    if (promoInput) {
-        promoInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                applyPromoCode();
-            }
-        });
-    }
+  if (!items.length) {
+    container.style.display = 'none';
+    if (emptyCart) emptyCart.style.display = 'block';
+    return;
+  }
+  container.style.display = 'flex';
+  if (emptyCart) emptyCart.style.display = 'none';
+  container.innerHTML = items.map(bagItemHTML).join('');
 }
 
-function loadbagItemsObjects() {
-    bagItemsObjects = iartwork.map(itemId => {
-        for (let i = 0; i < artworks.length; i++) {
-            if (itemId == artworks[i].id) {
-                return artworks[i];
-            }
-        }
-    }).filter(item => item !== undefined);
+function bagItemHTML(art) {
+  const price = salePrice(art);
+  const link = `${pageUrl('pages/product-detail.html')}?id=${art.id}`;
+  const wished = Store.wishlist.has(art.id);
+  return `
+  <div class="bag-item-container" data-id="${art.id}">
+    <div class="item-left-part">
+      <a href="${link}">${imgTag(art.image, art.title, 'bag-item-img')}</a>
+    </div>
+    <div class="item-right-part">
+      <div class="company">${escapeHtml(art.artist)}</div>
+      <div class="item-name"><a href="${link}">${escapeHtml(art.title)}</a></div>
+      <div class="price-container">
+        <span class="current-price">${formatCurrency(price)}</span>
+        ${art.discount_percentage > 0 ? `<span class="orignal-price">${formatCurrency(art.original_price)}</span><span class="discount-percentage">(${art.discount_percentage}% OFF)</span>` : ''}
+      </div>
+      <div class="return-period"><i class="fa-solid fa-rotate-left"></i> <span class="return-period-day">${art.return_period} days return available</span></div>
+      <div class="delivery-details"><i class="fa-solid fa-truck-fast"></i> Delivery by <span class="delivery-details-days">${deliveryDateFor(art)}</span></div>
+      <button type="button" class="move-wish-btn" data-move-wish="${art.id}">
+        <span class="material-symbols-outlined">favorite</span> ${wished ? 'Already in wishlist — remove from bag' : 'Move to wishlist'}
+      </button>
+    </div>
+    <button type="button" class="remove-from-cart" data-remove="${art.id}" title="Remove item" aria-label="Remove ${escapeHtml(art.title)} from bag">×</button>
+  </div>`;
 }
 
-function displayBagItems() {
-    const containerElement = document.querySelector('.bag-Items-container');
-    const emptyCart = document.getElementById('emptyCart');
-    const itemCount = document.getElementById('itemCount');
-    const clearCartBtn = document.getElementById('clearCartBtn');
-
-    if (!containerElement) return;
-
-    // Update item count
-    if (itemCount) {
-        itemCount.textContent = `(${bagItemsObjects.length} ${bagItemsObjects.length === 1 ? 'item' : 'items'})`;
-    }
-
-    // Show/hide clear cart button
-    if (clearCartBtn) {
-        clearCartBtn.style.display = bagItemsObjects.length > 0 ? 'block' : 'none';
-    }
-
-    if (bagItemsObjects.length === 0) {
-        containerElement.style.display = 'none';
-        if (emptyCart) {
-            emptyCart.style.display = 'block';
-        }
-        return;
-    }
-
-    containerElement.style.display = 'flex';
-    if (emptyCart) {
-        emptyCart.style.display = 'none';
-    }
-
-    let innerHTML = '';
-    bagItemsObjects.forEach(bagItems => {
-        innerHTML += generateItemHTML(bagItems);
-    });
-    containerElement.innerHTML = innerHTML;
+// ── Summary ──────────────────────────────────────────────────────
+function renderBagSummary(items) {
+  const el = document.querySelector('.bag-summary'); if (!el) return;
+  // promo is always re-computed against the CURRENT cart
+  if (appliedPromoCode && !items.length) appliedPromoCode = null;
+  const p = Store.pricing(items, appliedPromoCode);
+  el.innerHTML = `
+  <div class="bag-details-container">
+    <div class="price-header">PRICE DETAILS (${p.count} ${p.count === 1 ? 'Item' : 'Items'})</div>
+    <div class="price-item"><span class="price-item-tag">Total MRP</span><span class="price-item-value">${formatCurrency(p.totalMRP)}</span></div>
+    <div class="price-item"><span class="price-item-tag">Discount on MRP</span><span class="price-item-value priceDetail-base-discount">-${formatCurrency(p.productDiscount)}</span></div>
+    ${p.promoDiscount > 0 ? `
+    <div class="price-item">
+      <span class="price-item-tag">Promo (${escapeHtml(appliedPromoCode)}) <button type="button" class="promo-remove" data-remove-promo>Remove</button></span>
+      <span class="price-item-value priceDetail-base-discount">-${formatCurrency(p.promoDiscount)}</span>
+    </div>` : ''}
+    <div class="price-item"><span class="price-item-tag">Convenience Fee</span><span class="price-item-value">${p.fee === 0 ? 'FREE' : formatCurrency(p.fee)}</span></div>
+    <div class="price-footer"><span class="price-item-tag">Total Amount</span><span class="price-item-value" id="bagTotal">${formatCurrency(p.total)}</span></div>
+    <button type="button" class="btn-place-order" data-checkout ${p.count === 0 ? 'disabled' : ''}><i class="fa-solid fa-check"></i> PLACE ORDER</button>
+  </div>`;
 }
 
-function generateItemHTML(art) {
-    let discount = (art.original_price * art.discount_percentage) / 100;
-    let price = Math.round(art.original_price - discount);
-
-    return `
-    <div class="bag-item-container">
-        <div class="item-left-part">
-            <img class="bag-item-img" src="${art.image}" alt="${art.title}">
-        </div>
-        <div class="item-right-part">
-            <div class="company">${art.artist}</div>
-            <div class="item-name">${art.title}</div>
-            <div class="price-container">
-                <span class="current-price">₹${price}</span>
-                <span class="orignal-price">₹${art.original_price}</span>
-                <span class="discount-percentage">(${art.discount_percentage}% OFF)</span>
-            </div>
-            <div class="return-period">
-                <i class="fa-solid fa-rotate-left"></i>
-                <span class="return-period-day">${art.return_period} days return available</span>
-            </div>
-            <div class="delivery-details">
-                <i class="fa-solid fa-truck-fast"></i>
-                Delivery by <span class="delivery-details-days">${art.delivery_date}</span>
-            </div>
-        </div>
-        <div class="remove-from-cart" onclick="removeFromCart(${art.id})" title="Remove item">
-            ×
-        </div>
-    </div>`;
+// ── Recommendations ──────────────────────────────────────────────
+function renderRecommendations(items) {
+  const section = document.getElementById('recommendedSection');
+  const grid = document.getElementById('recommendedGrid');
+  if (!section || !grid) return;
+  if (!items.length) { section.style.display = 'none'; return; }
+  const inBag = items.map(a => a.id);
+  const recs = artworks.filter(a => !inBag.includes(a.id) && a.in_stock)
+    .sort((a, b) => b.rating - a.rating).slice(0, 4);
+  if (!recs.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  grid.innerHTML = recs.map(a => `
+    <div class="recommended-item">
+      <a href="${pageUrl('pages/product-detail.html')}?id=${a.id}">${imgTag(a.image, a.title)}<h4>${escapeHtml(a.title)}</h4></a>
+      <p class="price">${formatCurrency(salePrice(a))}</p>
+      <button type="button" class="rec-add-btn" data-rec-add="${a.id}">Add to bag</button>
+    </div>`).join('');
 }
 
-function displayBagSummary() {
-    const bagSummaryElement = document.querySelector('.bag-summary');
-    if (!bagSummaryElement) return;
-
-    let totalItem = bagItemsObjects.length;
-    let totalMRP = 0;
-    let totalDiscount = 0;
-
-    bagItemsObjects.forEach(bagItem => {
-        totalMRP += bagItem.original_price;
-        let discount = (bagItem.original_price * bagItem.discount_percentage) / 100;
-        totalDiscount += discount;
-    });
-
-    let CONVENIENCE_FEE = totalItem === 0 ? 0 : 78;
-    let finalPayment = totalMRP - totalDiscount - promoDiscount + CONVENIENCE_FEE;
-
-    bagSummaryElement.innerHTML = `
-    <div class="bag-details-container">
-        <div class="price-header">PRICE DETAILS (${totalItem} ${totalItem === 1 ? 'Item' : 'Items'})</div>
-        
-        <div class="price-item">
-            <span class="price-item-tag">Total MRP</span>
-            <span class="price-item-value">₹${totalMRP.toLocaleString()}</span>
-        </div>
-        
-        <div class="price-item">
-            <span class="price-item-tag">Discount on MRP</span>  
-            <span class="price-item-value priceDetail-base-discount">-₹${totalDiscount.toLocaleString()}</span>  
-        </div>
-        
-        ${promoDiscount > 0 ? `
-        <div class="price-item">
-            <span class="price-item-tag">Promo Code Discount (${appliedPromoCode})</span>  
-            <span class="price-item-value priceDetail-base-discount">-₹${promoDiscount.toLocaleString()}</span>  
-        </div>` : ''}
-        
-        <div class="price-item">
-            <span class="price-item-tag">Convenience Fee</span>  
-            <span class="price-item-value">${CONVENIENCE_FEE === 0 ? 'FREE' : '₹' + CONVENIENCE_FEE}</span>  
-        </div>
-        
-        <div class="price-footer">
-            <span class="price-item-tag">Total Amount</span>  
-            <span class="price-item-value">₹${finalPayment.toLocaleString()}</span>
-        </div>
-        
-        <button class="btn-place-order" ${totalItem === 0 ? 'disabled' : ''}>
-            <i class="fa-solid fa-check"></i> PLACE ORDER
-        </button>
-    </div>`;
-
-    // Re-attach event listener after updating HTML
-    const placeOrderBtn = document.querySelector('.btn-place-order');
-    if (placeOrderBtn) {
-        placeOrderBtn.addEventListener('click', handlePlaceOrder);
-    }
+// ── Events ───────────────────────────────────────────────────────
+function bindBagEvents() {
+  document.addEventListener('click', e => {
+    const remove = e.target.closest('[data-remove]');
+    if (remove) { removeFromCart(Number(remove.dataset.remove)); return; }
+    const move = e.target.closest('[data-move-wish]');
+    if (move) { moveToWishlist(Number(move.dataset.moveWish)); return; }
+    const rec = e.target.closest('[data-rec-add]');
+    if (rec) { if (addCart(Number(rec.dataset.recAdd))) renderBag(); return; }
+    if (e.target.closest('[data-remove-promo]')) { appliedPromoCode = null; renderBag(); showNotification('Promo code removed', 'info'); return; }
+    if (e.target.closest('[data-checkout]')) { startCheckout(); return; }
+  });
+  const clearBtn = document.getElementById('clearCartBtn');
+  if (clearBtn) clearBtn.addEventListener('click', handleClearCart);
+  const applyBtn = document.getElementById('applyPromoBtn');
+  if (applyBtn) applyBtn.addEventListener('click', applyPromoCode);
+  const promoInput = document.getElementById('promoInput');
+  if (promoInput) promoInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyPromoCode(); } });
 }
 
-function removeFromCart(itemId) {
-    iartwork = iartwork.filter(bagItemId => bagItemId != itemId);
-    localStorage.setItem('iartwork', JSON.stringify(iartwork));
-    loadbagItemsObjects();
-    displayBagIcon();
-    displayBagItems();
-    displayBagSummary();
-    showNotification('Item removed from cart', 'info');
+function removeFromCart(id) {
+  const art = getArtwork(id);
+  if (Store.cart.remove(id)) { renderBag(); showNotification(`"${art ? art.title : 'Item'}" removed from bag`, 'info'); }
 }
-
+function moveToWishlist(id) {
+  Store.wishlist.add(id); Store.cart.remove(id); renderBag();
+  showNotification('Moved to your wishlist', 'success');
+}
 function handleClearCart() {
-    if (confirm('Are you sure you want to clear your cart?')) {
-        iartwork = [];
-        localStorage.setItem('iartwork', JSON.stringify(iartwork));
-        loadbagItemsObjects();
-        displayBagIcon();
-        displayBagItems();
-        displayBagSummary();
-        appliedPromoCode = null;
-        promoDiscount = 0;
-        showNotification('Cart cleared successfully', 'success');
-    }
+  if (!Store.cart.count()) return;
+  if (!confirm('Are you sure you want to clear your bag?')) return;
+  Store.cart.clear(); appliedPromoCode = null; renderBag();
+  showNotification('Bag cleared', 'success');
 }
 
 function applyPromoCode() {
-    const promoInput = document.getElementById('promoInput');
-    const promoMessage = document.getElementById('promoMessage');
-    const code = promoInput.value.trim().toUpperCase();
-
-    if (!code) {
-        showPromoMessage('Please enter a promo code', 'error');
-        return;
-    }
-
-    // Sample promo codes
-    const promoCodes = {
-        'ART10': { discount: 10, type: 'percentage' },
-        'ART20': { discount: 20, type: 'percentage' },
-        'SAVE500': { discount: 500, type: 'fixed' },
-        'FIRSTBUY': { discount: 15, type: 'percentage' },
-        'WELCOME': { discount: 100, type: 'fixed' },
-        'IMTIYAZ': {discount: 700, type:  'fixed'},
-    };
-
-    if (promoCodes[code]) {
-        const promo = promoCodes[code];
-        
-        // Calculate promo discount
-        let totalMRP = bagItemsObjects.reduce((sum, item) => {
-            let discount = (item.original_price * item.discount_percentage) / 100;
-            return sum + (item.original_price - discount);
-        }, 0);
-
-        if (promo.type === 'percentage') {
-            promoDiscount = Math.round((totalMRP * promo.discount) / 100);
-        } else {
-            promoDiscount = promo.discount;
-        }
-
-        appliedPromoCode = code;
-        displayBagSummary();
-        showPromoMessage(`Promo code applied! You saved ₹${promoDiscount}`, 'success');
-        promoInput.value = '';
-    } else {
-        showPromoMessage('Invalid promo code', 'error');
-    }
+  const input = document.getElementById('promoInput');
+  const code = input.value.trim().toUpperCase();
+  if (!code) { showPromoMessage('Please enter a promo code', 'error'); return; }
+  if (!Store.cart.count()) { showPromoMessage('Add an artwork to your bag first', 'error'); return; }
+  if (!Store.PROMOS[code]) { showPromoMessage('Invalid promo code', 'error'); return; }
+  appliedPromoCode = code;
+  const p = Store.pricing(currentBagItems(), code);
+  renderBagSummary(currentBagItems());
+  showPromoMessage(`Promo code applied! You saved ${formatCurrency(p.promoDiscount)}`, 'success');
+  input.value = '';
 }
-
 function showPromoMessage(message, type) {
-    const promoMessage = document.getElementById('promoMessage');
-    if (promoMessage) {
-        promoMessage.textContent = message;
-        promoMessage.className = `promo-message ${type}`;
-        
-        setTimeout(() => {
-            promoMessage.textContent = '';
-            promoMessage.className = 'promo-message';
-        }, 3000);
-    }
+  const el = document.getElementById('promoMessage'); if (!el) return;
+  el.textContent = message; el.className = `promo-message ${type}`;
+  clearTimeout(showPromoMessage._t);
+  showPromoMessage._t = setTimeout(() => { el.textContent = ''; el.className = 'promo-message'; }, 3500);
 }
 
-function handlePlaceOrder() {
-    if (bagItemsObjects.length === 0) return;
-
-    const loadingScreen = document.getElementById('loadingScreen');
-    const confirmationScreen = document.getElementById('confirmationScreen');
-
-    // Show loading screen
-    if (loadingScreen) {
-        loadingScreen.style.display = 'flex';
-    }
-
-    // Generate order number
-    const orderNumber = 'AW-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    
-    // Calculate delivery date (7 days from now)
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 7);
-    const deliveryDateStr = deliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-    // Simulate order processing
-    setTimeout(() => {
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
-        
-        if (confirmationScreen) {
-            confirmationScreen.style.display = 'flex';
-            
-            // Update order details
-            const orderNumberElement = document.getElementById('orderNumber');
-            const deliveryDateElement = document.getElementById('deliveryDate');
-            
-            if (orderNumberElement) {
-                orderNumberElement.textContent = orderNumber;
-            }
-            if (deliveryDateElement) {
-                deliveryDateElement.textContent = deliveryDateStr;
-            }
-        }
-
-        // Clear cart
-        iartwork = [];
-        localStorage.setItem('iartwork', JSON.stringify(iartwork));
-        appliedPromoCode = null;
-        promoDiscount = 0;
-        
-        // Save order to localStorage
-        saveOrder(orderNumber, deliveryDateStr);
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 3000);
+// ── Checkout ─────────────────────────────────────────────────────
+function startCheckout() {
+  if (!Store.cart.count()) return;
+  authManager.requireLogin(openAddressModal, 'Please sign in to place your order.');
 }
 
-function saveOrder(orderNumber, deliveryDate) {
-    const order = {
-        orderNumber: orderNumber,
-        items: bagItemsObjects,
-        deliveryDate: deliveryDate,
-        orderDate: new Date().toISOString(),
-        promoCode: appliedPromoCode,
-        promoDiscount: promoDiscount
-    };
-
-    let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    orders.push(order);
-    localStorage.setItem('orders', JSON.stringify(orders));
+function openAddressModal() {
+  let modal = document.getElementById('checkoutModal');
+  if (modal) modal.remove();
+  const user = authManager.getCurrentUser() || {};
+  const a = user.address || {};
+  const p = Store.pricing(currentBagItems(), appliedPromoCode);
+  modal = document.createElement('div');
+  modal.id = 'checkoutModal'; modal.className = 'modal show'; modal.dataset.removeOnClose = '1';
+  modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
+  modal.innerHTML = `
+    <div class="modal-content checkout-content">
+      <span class="modal-close" role="button" aria-label="Close" tabindex="0" id="checkoutClose">&times;</span>
+      <h2>Delivery Details</h2>
+      <p class="checkout-sub">${p.count} item${p.count === 1 ? '' : 's'} · Total <strong>${formatCurrency(p.total)}</strong></p>
+      <form id="checkoutForm" novalidate>
+        <div class="form-group"><label for="coName">Full Name *</label><input id="coName" name="fullName" type="text" value="${escapeHtml(user.fullName || '')}" autocomplete="name"></div>
+        <div class="form-group"><label for="coPhone">Phone Number *</label><input id="coPhone" name="phone" type="tel" inputmode="numeric" value="${escapeHtml(user.phone || '')}" placeholder="10-digit mobile number" autocomplete="tel"></div>
+        <div class="form-group"><label for="coLine1">Address Line 1 *</label><input id="coLine1" name="line1" type="text" value="${escapeHtml(a.line1 || '')}" placeholder="House / flat, street" autocomplete="address-line1"></div>
+        <div class="form-group"><label for="coLine2">Address Line 2</label><input id="coLine2" name="line2" type="text" value="${escapeHtml(a.line2 || '')}" placeholder="Landmark, area (optional)" autocomplete="address-line2"></div>
+        <div class="form-row-2">
+          <div class="form-group"><label for="coCity">City *</label><input id="coCity" name="city" type="text" value="${escapeHtml(a.city || '')}" autocomplete="address-level2"></div>
+          <div class="form-group"><label for="coState">State *</label><input id="coState" name="state" type="text" value="${escapeHtml(a.state || '')}" autocomplete="address-level1"></div>
+        </div>
+        <div class="form-group"><label for="coPin">PIN Code *</label><input id="coPin" name="pin" type="text" inputmode="numeric" maxlength="6" value="${escapeHtml(a.pin || '')}" placeholder="6-digit PIN" autocomplete="postal-code"></div>
+        <div class="payment-box">
+          <label class="payment-option"><input type="radio" name="payment" value="Cash on Delivery" checked> <span><strong>Cash on Delivery</strong><small>Pay when your artwork arrives. Online payments are coming soon.</small></span></label>
+        </div>
+        <label class="save-addr"><input type="checkbox" name="saveAddress" checked> Save this address to my profile</label>
+        <button type="submit" class="submit-commission checkout-submit">Confirm Order · ${formatCurrency(p.total)}</button>
+      </form>
+    </div>`;
+  document.body.appendChild(modal);
+  document.body.classList.add('no-scroll');
+  const close = () => { modal.remove(); document.body.classList.remove('no-scroll'); };
+  modal.querySelector('#checkoutClose').addEventListener('click', close);
+  modal.querySelector('#checkoutClose').addEventListener('keydown', e => { if (e.key === 'Enter') close(); });
+  const form = modal.querySelector('#checkoutForm');
+  Array.from(form.elements).forEach(el => el.addEventListener('input', () => setFieldError(el, '')));
+  form.addEventListener('submit', e => { e.preventDefault(); submitCheckout(form, close); });
+  setTimeout(() => form.elements.fullName.focus(), 50);
 }
 
-function showRecommendations() {
-    const recommendedSection = document.getElementById('recommendedSection');
-    const recommendedGrid = document.getElementById('recommendedGrid');
+function submitCheckout(form, closeModal) {
+  const f = form.elements; let ok = true; let first = null;
+  const check = (el, bad, msg) => { setFieldError(el, bad ? msg : ''); if (bad) { ok = false; first = first || el; } };
+  check(f.fullName, f.fullName.value.trim().length < 2, 'Please enter the recipient name.');
+  check(f.phone, !validatePhone(f.phone.value), 'Enter a valid 10-digit phone number.');
+  check(f.line1, f.line1.value.trim().length < 5, 'Please enter your address.');
+  check(f.city, f.city.value.trim().length < 2, 'Please enter your city.');
+  check(f.state, f.state.value.trim().length < 2, 'Please enter your state.');
+  check(f.pin, !validatePin(f.pin.value), 'Enter a valid 6-digit PIN code.');
+  if (!ok) { first.focus(); return; }
 
-    if (!recommendedSection || !recommendedGrid || bagItemsObjects.length === 0) return;
-
-    // Get random artworks that aren't in cart
-    const availableArtworks = artworks.filter(art => !iartwork.includes(art.id));
-    const recommendations = availableArtworks
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 4);
-
-    if (recommendations.length > 0) {
-        recommendedSection.style.display = 'block';
-        
-        let html = '';
-        recommendations.forEach(art => {
-            let discount = (art.original_price * art.discount_percentage) / 100;
-            let price = Math.round(art.original_price - discount);
-            
-            html += `
-            <div class="recommended-item" onclick="addToCartFromRecommendation(${art.id})">
-                <img src="${art.image}" alt="${art.title}">
-                <h4>${art.title}</h4>
-                <p class="price">₹${price}</p>
-            </div>`;
-        });
-        
-        recommendedGrid.innerHTML = html;
-    }
+  const address = {
+    fullName: f.fullName.value.trim(), phone: f.phone.value.trim(),
+    line1: f.line1.value.trim(), line2: f.line2.value.trim(),
+    city: f.city.value.trim(), state: f.state.value.trim(), pin: f.pin.value.trim()
+  };
+  if (f.saveAddress.checked) {
+    authManager.updateProfile({ address: { line1: address.line1, line2: address.line2, city: address.city, state: address.state, pin: address.pin } });
+  }
+  closeModal();
+  placeOrder(address, f.payment.value);
 }
 
-function addToCartFromRecommendation(itemId) {
-    if (!iartwork.includes(itemId)) {
-        iartwork.push(itemId);
-        localStorage.setItem('iartwork', JSON.stringify(iartwork));
-        loadbagItemsObjects();
-        displayBagIcon();
-        displayBagItems();
-        displayBagSummary();
-        showRecommendations();
-        showNotification('Item added to cart!', 'success');
-    } else {
-        showNotification('Item already in cart', 'info');
+function placeOrder(address, paymentMethod) {
+  const items = currentBagItems();
+  if (!items.length) return;
+  const user = authManager.getCurrentUser();
+  const p = Store.pricing(items, appliedPromoCode);
+  const loading = document.getElementById('loadingScreen');
+  const confirmation = document.getElementById('confirmationScreen');
+  if (loading) loading.style.display = 'flex';
+
+  const orderDate = new Date();
+  const maxDays = Math.max(...items.map(a => a.delivery_days || 7));
+  const delivery = new Date(orderDate); delivery.setDate(delivery.getDate() + maxDays);
+
+  const order = {
+    orderNumber: Store.orders.nextNumber(),
+    userId: user ? user.id : null,
+    userEmail: user ? user.email : '',
+    items: items.map(a => ({ id: a.id, title: a.title, artist: a.artist, image: a.image, original_price: a.original_price, discount_percentage: a.discount_percentage, price: salePrice(a) })),
+    subtotal: p.subtotal, promoCode: appliedPromoCode, promoDiscount: p.promoDiscount, fee: p.fee, total: p.total,
+    address, paymentMethod, status: 'Processing',
+    orderDate: orderDate.toISOString(), deliveryISO: delivery.toISOString(),
+    deliveryDate: delivery.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  };
+
+  setTimeout(() => {
+    Store.orders.add(order);          // save first, so nothing is lost if the user leaves
+    Store.cart.clear(); appliedPromoCode = null;
+    renderBag();
+    if (loading) loading.style.display = 'none';
+    if (confirmation) {
+      confirmation.style.display = 'flex';
+      const n = document.getElementById('orderNumber'); if (n) n.textContent = order.orderNumber;
+      const d = document.getElementById('deliveryDate'); if (d) d.textContent = order.deliveryDate;
+      const t = document.getElementById('orderTotal'); if (t) t.textContent = formatCurrency(order.total);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 1800);
 }
-
-function showNotification(message, type = 'success') {
-    // Remove existing notification
-    const existing = document.querySelector('.notification');
-    if (existing) {
-        existing.remove();
-    }
-
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-
-    let bgColor = '#2bb673';
-    if (type === 'error') bgColor = '#f54e77';
-    if (type === 'info') bgColor = '#3498db';
-
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${bgColor};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-        max-width: 350px;
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);

@@ -1,44 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Artwork Details - I-ArtWorks</title>
-    <meta name="description" id="pageDescription" content="View detailed information about this beautiful artwork">
-    <link rel="stylesheet" href="../css/product-detail.css">
-        <link rel="stylesheet" href="/css/wishlist.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="pageTitle">Artwork Details - I-ArtWorks</title>
+  <meta name="description" id="pageDescription" content="View detailed information about this beautiful artwork">
+  <meta name="theme-color" content="#f54e77">
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/wishlist.css">
+  <link rel="stylesheet" href="../css/product-detail.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="stylesheet" href="../css/layout.css">
 </head>
 <body>
-   <!-- Header -->
    <header>
+      <button class="menu-btn" type="button" aria-label="Open menu">☰</button>
       <div class="logo_container">
-        <a href="../index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        <a href="../index.html"><img class="Imax_home" src="../images/logo.png" alt="I-ArtWorks" width="80" height="80"></a>
       </div>
-      <nav class="nav_bar">
+      <nav class="nav_bar" aria-label="Main">
         <a href="../index.html#gallery">Gallery</a>
         <a href="commission.html">Commissions</a>
         <a href="../index.html#about">About</a>
         <a href="../index.html#contact">Contact</a>
       </nav>
       <div class="action_bar">
- <a class="action_container" href="#" id="wishlistBtn">
+        <a class="action_container" href="wishlist.html" id="wishlistBtn" aria-label="Wishlist">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
           <span class="wishlist-badge">0</span>
         </a>
-        <a class="action_container" href="#">
+        <a class="action_container" href="#" id="profileBtn" aria-label="Account">
           <span class="material-symbols-outlined action_icon">person</span>
-          <span class="action_name">Profile</span>
+          <span class="action_name">Login</span>
         </a>
-        <a class="action_container" href="bag.html">
+        <a class="action_container" href="bag.html" aria-label="Shopping bag">
           <span class="material-symbols-outlined action_icon">shopping_bag</span>
           <span class="action_name">Bag</span>
           <span class="bag-item-count">0</span>
         </a>
       </div>
-   </header>
+    </header>
 
    <!-- Breadcrumb -->
    <div class="breadcrumb">
@@ -55,7 +61,7 @@
          <div class="product-gallery">
             <div class="main-image-container">
                <img id="mainImage" src="" alt="Artwork" class="main-image">
-               <button class="zoom-btn" onclick="openImageZoom()">
+               <button type="button" class="zoom-btn" aria-label="Zoom image">
                   <i class="fa-solid fa-magnifying-glass-plus"></i>
                </button>
                <div class="image-badge" id="imageBadge"></div>
@@ -90,7 +96,7 @@
          <div class="product-details">
             <div class="product-header">
                <h1 id="productTitle">Artwork Title</h1>
-               <button class="wishlist-btn" id="wishlistBtn" onclick="toggleWishlist()">
+               <button type="button" class="wishlist-btn" id="productWishBtn" aria-label="Add to wishlist" aria-pressed="false">
                   <i class="fa-regular fa-heart"></i>
                </button>
             </div>
@@ -103,9 +109,9 @@
                   <p class="artist-label">Artist</p>
                   <p class="artist-name" id="artistName">Artist Name</p>
                </div>
-               <button class="view-artist-btn" onclick="viewArtistProfile()">
-                  View Profile <i class="fa-solid fa-arrow-right"></i>
-               </button>
+               <a class="view-artist-btn" id="viewArtistBtn" href="../index.html#gallery">
+                  More by artist <i class="fa-solid fa-arrow-right"></i>
+               </a>
             </div>
 
             <!-- Ratings -->
@@ -117,7 +123,7 @@
                   <i class="fa-solid fa-star"></i>
                   <i class="fa-solid fa-star-half-stroke"></i>
                </div>
-               <span class="rating-text">4.5 (128 reviews)</span>
+               <span class="rating-text" id="ratingText">4.5 (128 reviews)</span>
             </div>
 
             <!-- Price Section -->
@@ -273,7 +279,7 @@
 
       <!-- Similar Artworks Section -->
       <section class="similar-artworks">
-         <h2><i class="fa-solid fa-sparkles"></i> You May Also Like</h2>
+         <h2><i class="fa-solid fa-wand-magic-sparkles"></i> You May Also Like</h2>
          <div class="similar-grid" id="similarGrid">
             <!-- Similar items will be loaded dynamically -->
          </div>
@@ -283,14 +289,14 @@
       <section class="reviews-section">
          <div class="reviews-header">
             <h2><i class="fa-solid fa-star"></i> Customer Reviews</h2>
-            <button class="write-review-btn" onclick="openReviewModal()">
+            <button type="button" class="write-review-btn">
                <i class="fa-solid fa-pen"></i> Write a Review
             </button>
          </div>
 
          <div class="reviews-summary">
             <div class="rating-overview">
-               <div class="rating-number">4.5</div>
+               <div class="rating-number" id="ratingNumber">4.5</div>
                <div class="rating-stars-large">
                   <i class="fa-solid fa-star"></i>
                   <i class="fa-solid fa-star"></i>
@@ -298,7 +304,7 @@
                   <i class="fa-solid fa-star"></i>
                   <i class="fa-solid fa-star-half-stroke"></i>
                </div>
-               <p>Based on 128 reviews</p>
+               <p id="ratingBasedOn">Based on 128 reviews</p>
             </div>
 
             <div class="rating-bars">
@@ -382,31 +388,27 @@
 
    <!-- Image Zoom Modal -->
    <div id="imageZoomModal" class="modal">
-      <span class="modal-close" onclick="closeImageZoom()">&times;</span>
-      <img class="modal-content" id="zoomedImage">
+      <span class="modal-close" onclick="closeImageZoom()" role="button" aria-label="Close zoom">&times;</span>
+      <img class="modal-content" id="zoomedImage" alt="Zoomed artwork" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
    </div>
 
    <!-- WhatsApp Floating Button -->
-   <a href="#" class="whatsapp-float" id="whatsappFloat" title="Chat on WhatsApp">
+   <a href="#" class="whatsapp-float" id="whatsappFloat" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
       <i class="fa-brands fa-whatsapp"></i>
    </a>
 
-   <!-- Footer -->
    <footer class="site-footer">
-      <div class="footer-bottom">
-         <div class="footer-copy">
-            © 2025 I-ArtWorks by Imtiyaz | All rights reserved.
-         </div>
-         <div class="footer-links-bottom">
-            <a href="#">Privacy Policy</a> | 
-            <a href="#">Terms of Service</a>
-         </div>
-      </div>
-   </footer>
+        <div class="footer-bottom">
+          <div class="footer-copy">© <span data-year>2026</span> I-ArtWorks by Imtiyaz | All rights reserved.</div>
+          <div class="footer-links-bottom"><a href="info.html#privacy">Privacy Policy</a> | <a href="info.html#terms">Terms of Service</a></div>
+        </div>
+    </footer>
 
-   <script src="../data/artworks.js"></script>
-   <script src="../script/index.js"></script>
-   <script src="../script/product-detail.js"></script>
-   <script src="../script/wishlist.js"></script>
+  <script src="../data/artworks.js"></script>
+  <script src="../script/utils.js"></script>
+  <script src="../script/store.js"></script>
+  <script src="../script/auth.js"></script>
+  <script src="../script/layout.js"></script>
+  <script src="../script/product-detail.js"></script>
 </body>
 </html>

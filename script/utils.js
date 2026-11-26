@@ -1,271 +1,167 @@
 // ═══════════════════════════════════════════════════════════════
-// UTILITY FUNCTIONS - Reusable helpers
+// utils.js — shared helpers used by EVERY page (load this first,
+// right after data/artworks.js).
 // ═══════════════════════════════════════════════════════════════
 
-/**
- * Format currency to Indian Rupees
- */
+// ── Site configuration (edit here) ─────────────────────────────
+const SITE_CONFIG = {
+  businessName: 'I-ArtWorks',
+  whatsappNumber: '916006202075', // digits only: country code + number, no "+" or spaces
+  convenienceFee: 78,
+  currencyLocale: 'en-IN',
+  // Paste your real profile URLs here; icons with an empty URL stay hidden in the footer.
+  social: { instagram: '', facebook: '' }
+};
+
+// ── Path resolution ────────────────────────────────────────────
+// Works from file://, localhost, GitHub Pages sub-folders and custom
+// domains: the site root is derived from this script's own URL.
+const SITE_ROOT = (function () {
+  const el = document.currentScript;
+  if (el && el.src) return new URL('../', el.src).href;
+  return new URL(location.pathname.includes('/pages/') ? '../' : './', location.href).href;
+})();
+
+function assetUrl(path) { return new URL(path, SITE_ROOT).href; }
+function pageUrl(path)  { return new URL(path, SITE_ROOT).href; }
+
+const IMG_PLACEHOLDER =
+  'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">' +
+    '<rect width="600" height="800" fill="#f0f1f5"/>' +
+    '<text x="300" y="400" font-family="sans-serif" font-size="28" fill="#a0a4b8" text-anchor="middle">I-ArtWorks</text></svg>');
+
+// Builds an <img> tag with lazy-loading and a broken-image fallback.
+function imgTag(src, alt, cls = '', extra = '') {
+  return `<img class="${cls}" src="${assetUrl(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" ${extra} ` +
+         `onerror="this.onerror=null;this.src=IMG_PLACEHOLDER">`;
+}
+
+// ── Safety ─────────────────────────────────────────────────────
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
+// ── Artwork helpers ────────────────────────────────────────────
+function getArtwork(id) {
+  id = Number(id);
+  return (typeof artworks !== 'undefined' ? artworks : []).find(a => a.id === id) || null;
+}
+function salePrice(art) {
+  return Math.round(art.original_price - (art.original_price * art.discount_percentage) / 100);
+}
+function savingsOf(art) { return art.original_price - salePrice(art); }
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-  }).format(amount);
+  return '₹' + Number(amount || 0).toLocaleString(SITE_CONFIG.currencyLocale);
+}
+function deliveryDateFor(art, fromDate = new Date()) {
+  const d = new Date(fromDate);
+  d.setDate(d.getDate() + (art && art.delivery_days ? art.delivery_days : 7));
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function labelClass(label) {
+  const l = String(label || '').toLowerCase();
+  return ['new', 'featured', 'curated', 'limited'].includes(l) ? 'label-' + l : 'label-default';
 }
 
-/**
- * Calculate discount price
- */
-function calculateDiscount(original, percentage) {
-  const discountAmount = (original * percentage) / 100;
-  return Math.round(original - discountAmount);
-}
-
-/**
- * Calculate savings
- */
-function calculateSavings(original, percentage) {
-  return Math.round((original * percentage) / 100);
-}
-
-/**
- * Show notification toast
- */
-function showNotification(message, type = 'success', duration = 3000) {
-  // Remove existing notification
-  const existing = document.querySelector('.notification');
-  if (existing) existing.remove();
-
-  const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
-  notification.innerHTML = `
-    <div class="notification-content">
-      <span class="notification-icon">${getNotificationIcon(type)}</span>
-      <span>${message}</span>
-    </div>
-  `;
-
-  document.body.appendChild(notification);
-  
-  // Add show class for animation
-  setTimeout(() => notification.classList.add('show'), 10);
-
-  // Remove after duration
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => notification.remove(), 300);
-  }, duration);
-}
-
-/**
- * Get notification icon
- */
-function getNotificationIcon(type) {
-  const icons = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ',
-    warning: '⚠',
-  };
-  return icons[type] || icons.info;
-}
-
-/**
- * Validate email
- */
-function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-}
-
-/**
- * Validate phone number
- */
+// ── Validation ─────────────────────────────────────────────────
+function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email || '').trim()); }
 function validatePhone(phone) {
-  const re = /^[0-9]{10}$/;
-  return re.test(phone.replace(/\D/g, ''));
+  const digits = String(phone || '').replace(/\D/g, '');
+  return digits.length === 10 || (digits.length === 12 && digits.startsWith('91'));
 }
+function validatePin(pin) { return /^[1-9][0-9]{5}$/.test(String(pin || '').trim()); }
 
-/**
- * Debounce function
- */
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-/**
- * Throttle function
- */
-function throttle(func, limit) {
-  let inThrottle;
-  return function(...args) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
-}
-
-/**
- * Get item from localStorage with fallback
- */
-function getFromStorage(key, defaultValue = null) {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (error) {
-    console.error(`Error reading from localStorage: ${key}`, error);
-    return defaultValue;
+// Inline field errors (used by every form).
+function setFieldError(input, message) {
+  if (!input) return;
+  const group = input.closest('.form-group') || input.parentElement;
+  let err = group.querySelector('.field-error');
+  if (message) {
+    if (!err) { err = document.createElement('div'); err.className = 'field-error'; err.setAttribute('role', 'alert'); group.appendChild(err); }
+    err.textContent = message;
+    input.classList.add('input-invalid');
+    input.setAttribute('aria-invalid', 'true');
+  } else {
+    if (err) err.remove();
+    input.classList.remove('input-invalid');
+    input.removeAttribute('aria-invalid');
   }
 }
 
-/**
- * Save item to localStorage
- */
+// ── Storage (safe wrappers) ────────────────────────────────────
+function getFromStorage(key, fallback = null) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { console.warn('Storage read failed:', key, e); return fallback; }
+}
 function saveToStorage(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (error) {
-    console.error(`Error saving to localStorage: ${key}`, error);
-    return false;
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch (e) { console.warn('Storage write failed:', key, e); return false; }
+}
+function removeFromStorage(key) { try { localStorage.removeItem(key); } catch (e) {} }
+
+// ── Toast notifications (single implementation for the whole site) ──
+function showNotification(message, type = 'success', duration = 3000) {
+  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+  let host = document.getElementById('toastHost');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'toastHost';
+    host.setAttribute('aria-live', 'polite');
+    document.body.appendChild(host);
   }
+  const toast = document.createElement('div');
+  toast.className = `site-toast site-toast-${type}`;
+  toast.innerHTML = `<span class="site-toast-icon">${icons[type] || icons.info}</span><span>${escapeHtml(message)}</span>`;
+  host.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, duration);
+  while (host.children.length > 3) host.firstChild.remove();
 }
 
-/**
- * Remove item from localStorage
- */
-function removeFromStorage(key) {
+// ── Misc ───────────────────────────────────────────────────────
+function debounce(fn, wait = 250) {
+  let t; return function (...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait); };
+}
+function getQueryParam(name) { return new URLSearchParams(location.search).get(name); }
+function generateId(prefix = 'id') { return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9); }
+function formatDate(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function whatsappUrl(message) {
+  return `https://wa.me/${String(SITE_CONFIG.whatsappNumber).replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+}
+async function copyToClipboard(text) {
   try {
-    localStorage.removeItem(key);
-    return true;
-  } catch (error) {
-    console.error(`Error removing from localStorage: ${key}`, error);
-    return false;
-  }
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; }
+  } catch (e) { /* fall through */ }
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  ta.remove(); return ok;
 }
 
-/**
- * Format date
- */
-function formatDate(date, format = 'DD MMM YYYY') {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  const monthName = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'][d.getMonth()];
-  
-  return format
-    .replace('DD', day)
-    .replace('MM', month)
-    .replace('MMM', monthName)
-    .replace('YYYY', year);
-}
-
-/**
- * Filter array of objects
- */
-function filterByProperty(array, property, value) {
-  return array.filter(item => item[property] === value);
-}
-
-/**
- * Sort array of objects
- */
-function sortByProperty(array, property, order = 'asc') {
-  return [...array].sort((a, b) => {
-    if (a[property] < b[property]) return order === 'asc' ? -1 : 1;
-    if (a[property] > b[property]) return order === 'asc' ? 1 : -1;
-    return 0;
-  });
-}
-
-/**
- * Check if element is in viewport
- */
-function isInViewport(element) {
-  const rect = element.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
-}
-
-/**
- * Lazy load images
- */
-function lazyLoadImages() {
-  const images = document.querySelectorAll('img[data-src]');
-  const imageObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-        observer.unobserve(img);
-      }
-    });
-  });
-
-  images.forEach(img => imageObserver.observe(img));
-}
-
-/**
- * Copy to clipboard
- */
-function copyToClipboard(text) {
-  return navigator.clipboard.writeText(text).then(() => {
-    showNotification('Copied to clipboard!', 'success');
-    return true;
-  }).catch(err => {
-    console.error('Failed to copy:', err);
-    showNotification('Failed to copy', 'error');
-    return false;
-  });
-}
-
-/**
- * Generate unique ID
- */
-function generateId() {
-  return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
-/**
- * Truncate text
- */
-function truncateText(text, maxLength = 50) {
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-}
-
-/**
- * Get query parameter
- */
-function getQueryParam(param) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(param);
-}
-
-/**
- * Add animation to element
- */
-function animateElement(element, animationName, duration = 300) {
-  return new Promise(resolve => {
-    element.style.animation = `${animationName} ${duration}ms ease`;
-    setTimeout(() => {
-      element.style.animation = '';
-      resolve();
-    }, duration);
-  });
+// ── Commission requests (shared by the commission page and the home-page quick form) ──
+function buildCommissionMessage(d) {
+  return [
+    '🎨 *NEW COMMISSION REQUEST* 🎨', '',
+    '*Customer Details:*',
+    `👤 Name: ${d.fullName}`,
+    `📧 Email: ${d.email}`,
+    `📱 Phone: ${d.phone || 'Not provided'}`, '',
+    '*Artwork Requirements:*',
+    `🖼️ Type: ${d.portraitType}`,
+    `🎨 Medium: ${d.medium || 'Not specified'}`,
+    `📐 Size: ${d.size}`,
+    `💰 Budget: ${d.budget || 'Not specified'}`,
+    `⏰ Timeline: ${d.timeline || 'Flexible'}`, '',
+    '*Description:*',
+    d.specialRequests, '',
+    `📅 Submitted: ${d.submittedAt}`,
+    `_Sent from ${SITE_CONFIG.businessName} Commission Form_`
+  ].join('\n');
 }

@@ -2,69 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>I-ArtWorks | Extraordinary Art Gallery</title>
   <meta name="description" content="Discover and collect extraordinary artwork from talented artists worldwide. Original pieces, free shipping, and authentic artist-verified collections.">
-    <!-- Fonts -->
+  <meta name="theme-color" content="#f54e77">
+  <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/wishlist.css">
-  <link rel="stylesheet" href="./css/carousel.css">
-  <link rel="stylesheet" href="./css/bag.css">
-  <link rel="stylesheet" href="./css/auth.css">
-    <link rel="stylesheet" href="./css/style-premium.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/wishlist.css">
+  <link rel="stylesheet" href="css/carousel.css">
+  <link rel="stylesheet" href="css/bag.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/style-premium.css">
+  <link rel="stylesheet" href="css/layout.css">
 </head>
-
 <body>
-   <!-- Headeer -->
    <header>
-     <button class="menu-btn">
-    ☰
-  </button>
+      <button class="menu-btn" type="button" aria-label="Open menu">☰</button>
       <div class="logo_container">
-        <a href="#"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        <a href="index.html"><img class="Imax_home" src="images/logo.png" alt="I-ArtWorks" width="80" height="80"></a>
       </div>
-      <nav class="nav_bar">
+      <nav class="nav_bar" aria-label="Main">
         <a href="#gallery">Gallery</a>
         <a href="pages/commission.html">Commissions</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="action_bar">
-        <a class="action_container" href="#" id="wishlistBtn">
+        <a class="action_container" href="pages/wishlist.html" id="wishlistBtn" aria-label="Wishlist">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
           <span class="wishlist-badge">0</span>
         </a>
-        <a class="action_container" href="#" id="profileBtn">
+        <a class="action_container" href="#" id="profileBtn" aria-label="Account">
           <span class="material-symbols-outlined action_icon">person</span>
-          <span class="action_name">Profile</span>
+          <span class="action_name">Login</span>
         </a>
-        <a class="action_container" href="pages/bag.html">
+        <a class="action_container" href="pages/bag.html" aria-label="Shopping bag">
           <span class="material-symbols-outlined action_icon">shopping_bag</span>
           <span class="action_name">Bag</span>
           <span class="bag-item-count">0</span>
         </a>
       </div>
-   </header>
-   <div class="mobile-search">
+    </header>
+   <div class="mobile-search" role="search">
   <span class="material-symbols-outlined">search</span>
-  <input type="text" placeholder="Search artworks...">
+  <input type="search" id="mobileSearchInput" placeholder="Search artworks..." aria-label="Search artworks" enterkeyhint="search">
 </div>
 
   <!-- ══════════════════════════════════════
        HERO
   ══════════════════════════════════════ -->
   <section class="hero-section">
-    <video autoplay muted loop playsinline class="hero-video">
-      <source src="/IArtWorks/images/SnapInsta.to_AQP_hecCdGrKJ8yUGdV4LjcsZV4eMeMZz6twttm54U67uKHvpNSW-IKh_3tTLYzM8icS-108RaWUD8JLGDknbq0Qnf8-8kvWZtAbTnw.mp4" type="video/mp4">
-      <img src="/I-ArtWorks/images/1.jpg" alt="Art gallery">
+    <video autoplay muted loop playsinline preload="metadata" poster="images/1.jpg" class="hero-video" aria-hidden="true">
+      <source src="images/hero.mp4" type="video/mp4">
     </video>
     <div class="hero-overlay">
       <span class="hero-eyebrow">✦ Curated Art Gallery</span>
@@ -118,38 +111,23 @@
         </section>
 
         <!-- Preview Gallery Section -->
-        <section class="gallery">
-          <div class="art-card">
-            <img src="/I-ArtWorks/images/1.jpg" alt="Geometric Dreams">
-            <div class="overlay">
-              <h3>Geometric Dreams</h3>
-              <p>Alex Noir</p>
-            </div>
-          </div>
-
-          <div class="art-card">
-            <img src="/I-ArtWorks/images/2.jpg" alt="Ocean Bliss">
-            <div class="overlay">
-              <h3>Ocean Bliss</h3>
-              <p>Maria Lee</p>
-            </div>
-          </div>
-
-          <div class="art-card">
-            <img src="/I-ArtWorks/images/3.jpg" alt="Golden Horizon">
-            <div class="overlay">
-              <h3>Golden Horizon</h3>
-              <p>Kai Tanaka</p>
-            </div>
-          </div>
-
-          <div class="art-card">
-            <img src="/I-ArtWorks/images/4.jpg" alt="Silent Forest">
-            <div class="overlay">
-              <h3>Silent Forest</h3>
-              <p>Elena Rossi</p>
-            </div>
-          </div>
+        <section class="gallery" aria-label="Preview gallery">
+          <a class="art-card" href="pages/product-detail.html?id=13">
+            <img src="images/1.jpg" alt="Silent Forest" loading="lazy" decoding="async">
+            <div class="overlay"><h3>Silent Forest</h3><p>Elena Rossi</p></div>
+          </a>
+          <a class="art-card" href="pages/product-detail.html?id=14">
+            <img src="images/2.jpg" alt="Ocean Bliss" loading="lazy" decoding="async">
+            <div class="overlay"><h3>Ocean Bliss</h3><p>Maria Lee</p></div>
+          </a>
+          <a class="art-card" href="pages/product-detail.html?id=15">
+            <img src="images/3.jpg" alt="Golden Horizon" loading="lazy" decoding="async">
+            <div class="overlay"><h3>Golden Horizon</h3><p>Kai Tanaka</p></div>
+          </a>
+          <a class="art-card" href="pages/product-detail.html?id=16">
+            <img src="images/4.jpg" alt="Geometric Dreams" loading="lazy" decoding="async">
+            <div class="overlay"><h3>Geometric Dreams</h3><p>Alex Noir</p></div>
+          </a>
         </section>
 
         <!-- Featured Artwork Section -->
@@ -161,21 +139,66 @@
             <div class="collection-header">
               <h3>Artwork Collection</h3>
               <div class="collection-controls">
-                <button class="control-btn" id="gridBtn" title="Grid View">
+                <button class="control-btn" id="gridBtn" type="button" title="Grid View" aria-label="Grid view" aria-pressed="true">
                   <span class="material-symbols-outlined">grid_view</span>
                 </button>
-                <button class="control-btn" id="listBtn" title="List View">
+                <button class="control-btn" id="listBtn" type="button" title="List View" aria-label="List view" aria-pressed="false">
                   <span class="material-symbols-outlined">list</span>
                 </button>
-                <button class="control-btn" id="filterBtn" title="Filter">
+                <button class="control-btn" id="filterBtn" type="button" title="Filter" aria-label="Filters" aria-controls="filterPanel">
                   <span class="material-symbols-outlined">filter_list</span>
                 </button>
               </div>
             </div>
             <p><span id="artworkCount">0</span> masterpieces waiting to be discovered</p>
+            <p id="resultsNote" class="results-note" aria-live="polite"></p>
+
+            <div class="gallery-toolbar" role="search">
+              <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="search" id="gallerySearch" placeholder="Search by title, artist or medium…" aria-label="Search artworks" autocomplete="off">
+                <button type="button" id="clearSearch" class="clear-search" aria-label="Clear search" hidden>&times;</button>
+              </div>
+              <label class="sort-box"><span class="sr-only">Sort by</span>
+                <select id="sortSelect" aria-label="Sort artworks">
+                  <option value="featured">Sort: Featured</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="discount">Biggest Discount</option>
+                  <option value="rating">Top Rated</option>
+                  <option value="name">Name: A–Z</option>
+                </select>
+              </label>
+            </div>
+            <div class="category-chips" id="categoryChips" role="group" aria-label="Categories"></div>
+
+            <div class="filter-panel" id="filterPanel" hidden>
+              <div class="filter-field">
+                <label for="priceRange">Maximum price</label>
+                <input type="range" id="priceRange" step="10">
+                <span id="priceRangeLabel" class="range-label"></span>
+              </div>
+              <label class="filter-check"><input type="checkbox" id="onlyDiscounted"> Only discounted artworks</label>
+              <button type="button" class="filter-reset" data-reset-filters>Reset all</button>
+            </div>
           </section>
 
-          <div class="art-grid grid-view"></div>
+          <div class="art-grid grid-view" aria-live="polite"></div>
+          <div class="no-results" id="noResults" hidden>
+            <div class="nr-icon">🔍</div>
+            <h3>No artworks match your search</h3>
+            <p>Try a different word, category or price range.</p>
+            <button type="button" class="filter-reset" data-reset-filters>Clear search &amp; filters</button>
+          </div>
+
+          <div class="commission-cta">
+            <h3>Can't find the perfect piece?</h3>
+            <p>Commission a custom painting made just for you.</p>
+            <div class="cta-buttons">
+              <button type="button" class="cta-primary" data-open-commission>Quick Request</button>
+              <a class="cta-secondary" href="pages/commission.html">Full Commission Form</a>
+            </div>
+          </div>
         </section>
 
 
@@ -183,9 +206,9 @@
   <div class="hot-header">
     <h2>Hot This Week</h2>
 
-    <div class="hot-tabs">
-      <button class="hot-tab active">Best Sellers</button>
-      <button class="hot-tab">New Arrivals</button>
+    <div class="hot-tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" class="hot-tab active">Best Sellers</button>
+      <button type="button" role="tab" aria-selected="false" class="hot-tab">New Arrivals</button>
     </div>
   </div>
 
@@ -219,127 +242,100 @@
           </div>
         </section>
 
-        <!-- Footer -->
         <footer class="site-footer" id="contact">
-          <div class="footer-main">
-            <div class="footer-col brand-info">
-              <div class="footer-logo">ITY</div>
-              <div class="footer-title">I-ArtWorks by Imtiyaz</div>
-              <p>
-                Discover and collect extraordinary artwork pieces from talented artists worldwide. Each piece curated for authenticity and soul.
-              </p>
-              <div class="footer-social">
-                <a href="#" aria-label="Website">🌐</a>
-                <a href="#" aria-label="Instagram">📷</a>
-                <a href="#" aria-label="Facebook">📘</a>
-              </div>
-            </div>
-            <div class="footer-col quick-links">
-              <div class="footer-heading">Quick Links</div>
-              <a href="#gallery">Gallery</a>
-              <a href="#commissions">Commissions</a>
-              <a href="#about">About</a>
-              <a href="#contact">Contact</a>
-            </div>
-            <div class="footer-col customer-service">
-              <div class="footer-heading">Customer Service</div>
-              <a href="#shipping">Shipping & Returns</a>
-              <a href="#howto">How it works</a>
-              <a href="#faq">FAQ</a>
-              <a href="#support">Support</a>
-            </div>
-            <div class="footer-col stay-updated">
-              <div class="footer-heading">Stay Updated</div>
-              <p>Subscribe to our newsletter for exclusive offers, new collections, and special articles.</p>
-              <form id="newsletterForm" onsubmit="handleNewsletter(event)">
-                <input type="email" placeholder="Enter your email" class="footer-email" required />
-                <button class="footer-subscribe" type="submit">Subscribe</button>
-              </form>
-              <p id="newsletterMessage" class="newsletter-message"></p>
+        <div class="footer-main">
+          <div class="footer-col brand-info">
+            <div class="footer-logo">ITY</div>
+            <div class="footer-title">I-ArtWorks by Imtiyaz</div>
+            <p>Discover and collect extraordinary artwork pieces from talented artists worldwide. Each piece curated for authenticity and soul.</p>
+            <div class="footer-social">
+              <a href="index.html" aria-label="Website" title="Website">🌐</a>
+              <a href="#" data-social="instagram" aria-label="Instagram" title="Instagram" target="_blank" rel="noopener" hidden>📷</a>
+              <a href="#" data-social="facebook" aria-label="Facebook" title="Facebook" target="_blank" rel="noopener" hidden>📘</a>
+              <a href="#" data-social="whatsapp" aria-label="WhatsApp" title="Chat on WhatsApp" target="_blank" rel="noopener">💬</a>
             </div>
           </div>
-          <div class="footer-icons-row">
-            <div class="footer-icon-card">
-              <div class="footer-icon">🎨</div>
-              <div class="icon-title">Original Artwork</div>
-              <div class="icon-desc">Handcrafted pieces by real artists</div>
-            </div>
-            <div class="footer-icon-card">
-              <div class="footer-icon">🚚</div>
-              <div class="icon-title">Free Shipping</div>
-              <div class="icon-desc">Worldwide delivery available</div>
-            </div>
-            <div class="footer-icon-card">
-              <div class="footer-icon">🔒</div>
-              <div class="icon-title">Secure Payment</div>
-              <div class="icon-desc">100% safe transactions</div>
-            </div>
-            <div class="footer-icon-card">
-              <div class="footer-icon">↩️</div>
-              <div class="footer-icon">✓</div>
-              <div class="icon-title">Easy Returns</div>
-              <div class="icon-desc">14-day return policy</div>
-            </div>
+          <div class="footer-col quick-links">
+            <div class="footer-heading">Quick Links</div>
+            <a href="#gallery">Gallery</a>
+            <a href="pages/commission.html">Commissions</a>
+            <a href="#about">About</a>
+            <a href="pages/wishlist.html">Wishlist</a>
           </div>
-          <div class="footer-bottom">
-            <div class="footer-copy">
-              © 2025 I-ArtWorks by Imtiyaz | All rights reserved.
-            </div>
-            <div class="footer-links-bottom">
-              <a href="#privacy">Privacy Policy</a> | 
-              <a href="#terms">Terms of Service</a>
-            </div>
+          <div class="footer-col customer-service">
+            <div class="footer-heading">Customer Service</div>
+            <a href="pages/info.html#shipping">Shipping &amp; Returns</a>
+            <a href="pages/info.html#howto">How it works</a>
+            <a href="pages/info.html#faq">FAQ</a>
+            <a href="pages/info.html#support">Support</a>
           </div>
-        </footer>
+          <div class="footer-col stay-updated">
+            <div class="footer-heading">Stay Updated</div>
+            <p>Subscribe to our newsletter for exclusive offers, new collections, and special articles.</p>
+            <form id="newsletterForm">
+              <input type="email" placeholder="Enter your email" class="footer-email" aria-label="Email address" required />
+              <button class="footer-subscribe" type="submit">Subscribe</button>
+            </form>
+            <p id="newsletterMessage" class="newsletter-message" role="status"></p>
+          </div>
+        </div>
+        <div class="footer-icons-row">
+          <div class="footer-icon-card"><div class="footer-icon">🎨</div><div class="icon-title">Original Artwork</div><div class="icon-desc">Handcrafted pieces by real artists</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">🚚</div><div class="icon-title">Free Shipping</div><div class="icon-desc">Worldwide delivery available</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">🔒</div><div class="icon-title">Secure Payment</div><div class="icon-desc">100% safe transactions</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">↩️</div><div class="icon-title">Easy Returns</div><div class="icon-desc">14-day return policy</div></div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">© <span data-year>2026</span> I-ArtWorks by Imtiyaz | All rights reserved.</div>
+          <div class="footer-links-bottom"><a href="pages/info.html#privacy">Privacy Policy</a> | <a href="pages/info.html#terms">Terms of Service</a></div>
+        </div>
+      </footer>
       </div>
    </main>
 
-   <!-- Modal for Commission Form -->
-   <div id="commissionModal" class="modal">
+   <!-- Quick commission modal -->
+   <div id="commissionModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="commissionTitle">
      <div class="modal-content">
-       <span class="modal-close" onclick="closeCommissionModal()">&times;</span>
-       <h2>Commission Custom Artwork</h2>
-       <form id="commissionForm" onsubmit="handleCommission(event)">
-         <input type="text" placeholder="Your Name" required>
-         <input type="email" placeholder="Your Email" required>
-         <input type="tel" placeholder="Phone Number">
-         <select required>
+       <span class="modal-close" role="button" tabindex="0" aria-label="Close" data-close-commission>&times;</span>
+       <h2 id="commissionTitle">Commission Custom Artwork</h2>
+       <form id="commissionForm" novalidate>
+         <div class="form-group"><input type="text" name="fullName" placeholder="Your Name" aria-label="Your name" autocomplete="name"></div>
+         <div class="form-group"><input type="email" name="email" placeholder="Your Email" aria-label="Your email" autocomplete="email"></div>
+         <div class="form-group"><input type="tel" name="phone" placeholder="Phone Number (optional)" aria-label="Phone number" inputmode="numeric" autocomplete="tel"></div>
+         <div class="form-group"><select name="style" aria-label="Art style">
            <option value="">Select Art Style</option>
            <option value="abstract">Abstract</option>
            <option value="portrait">Portrait</option>
            <option value="landscape">Landscape</option>
            <option value="contemporary">Contemporary</option>
-         </select>
-         <select required>
+         </select></div>
+         <div class="form-group"><select name="size" aria-label="Size">
            <option value="">Select Size</option>
            <option value="small">Small (12" x 16")</option>
            <option value="medium">Medium (18" x 24")</option>
            <option value="large">Large (24" x 36")</option>
-           <option value="custom">Custom Size</option>
-         </select>
-         <textarea placeholder="Describe your vision..." rows="5" required></textarea>
+           <option value="custom">Custom Size (tell us below)</option>
+         </select></div>
+         <div class="form-group"><textarea name="description" placeholder="Describe your vision..." rows="5" aria-label="Describe your vision"></textarea></div>
          <button type="submit" class="submit-commission">Submit Request</button>
        </form>
      </div>
    </div>
 
    <!-- Preview Modal -->
-   <div id="previewModal" class="modal">
+   <div id="previewModal" class="modal" role="dialog" aria-modal="true" aria-label="Quick view">
      <div class="modal-content preview-content">
-       <span class="modal-close" onclick="closePreviewModal()">&times;</span>
+       <span class="modal-close" role="button" tabindex="0" aria-label="Close" onclick="closePreviewModal()">&times;</span>
        <div id="previewBody"></div>
      </div>
    </div>
 
-   <!-- Scripts -->
-   <script src="data/artworks.js"></script>
-  <script src="data/hot-artworks.js"></script>
-   <script src="script/index.js"></script>
-   <script src="script/bag.js"></script>
-   <script src="script/wishlist.js"></script>
-   <script src="script/carousel.js"></script>
-   <script src="script/auth.js"></script>
-   <script src="script/ui-enhancer.js"></script>
-  
+  <script src="data/artworks.js"></script>
+  <script src="script/utils.js"></script>
+  <script src="script/store.js"></script>
+  <script src="script/auth.js"></script>
+  <script src="script/layout.js"></script>
+  <script src="script/index.js"></script>
+  <script src="script/carousel.js"></script>
 </body>
 </html>

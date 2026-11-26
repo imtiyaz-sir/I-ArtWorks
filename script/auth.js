@@ -1,615 +1,496 @@
-// Authentication Manager Class
+// ═══════════════════════════════════════════════════════════════
+// auth.js — frontend-only authentication (LocalStorage).
+// Accounts live in this browser only. When the real backend is
+// built, replace the bodies of register/login/logout/updateProfile/
+// changePassword/resetPassword with API calls; the UI stays as is.
+// ⚠ Passwords here are only lightly hashed — fine for a demo
+//   frontend, NOT for production.
+// ═══════════════════════════════════════════════════════════════
+
 class AuthManager {
-    constructor() {
-        this.currentUser = null;
-        this.storageKey = 'iartworks_user';
-        this.usersKey = 'iartworks_users';
-        this.init();
+  constructor() {
+    this.currentUser = null;
+    this.storageKey = 'iartworks_user';
+    this.usersKey = 'iartworks_users';
+    this.pendingAction = null;     // callback to run after a successful login
+    this.resetEmail = null;        // email being reset in the forgot-password flow
+    this.init();
+  }
+
+  init() {
+    this.loadCurrentUser();
+    this.setupEventListeners();
+    const run = () => {
+      this.updateUI();
+      // ?login=1&next=pages/dashboard.html  → open login, then continue
+      if (getQueryParam('login') === '1' && !this.isLoggedIn()) {
+        this.showAuthModal('login', 'Please sign in to continue.');
+      }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+  }
+
+  // ── Session storage ───────────────────────────────────────────
+  // "Remember me" → localStorage (persists); otherwise sessionStorage (until tab closes).
+  loadCurrentUser() {
+    let saved = null;
+    try { saved = sessionStorage.getItem(this.storageKey) || localStorage.getItem(this.storageKey); } catch (e) {}
+    if (!saved) { this.currentUser = null; return; }
+    try {
+      const sessionUser = JSON.parse(saved);
+      // Always refresh from the users list so profile edits are current.
+      const fresh = this.getAllUsers().find(u => u.id === sessionUser.id);
+      if (!fresh) { this.currentUser = null; this.clearSession(); return; }
+      this.currentUser = this.publicUser(fresh);
+    } catch (e) { this.currentUser = null; }
+  }
+
+  persistSession(remember = true) {
+    this.clearSession();
+    try { (remember ? localStorage : sessionStorage).setItem(this.storageKey, JSON.stringify(this.currentUser)); } catch (e) {}
+  }
+  clearSession() {
+    try { localStorage.removeItem(this.storageKey); sessionStorage.removeItem(this.storageKey); } catch (e) {}
+  }
+  isRemembered() { try { return !!localStorage.getItem(this.storageKey); } catch (e) { return false; } }
+
+  publicUser(user) { const u = { ...user }; delete u.password; return u; }
+  getAllUsers() { const list = getFromStorage(this.usersKey, []); return Array.isArray(list) ? list : []; }
+  saveAllUsers(users) { saveToStorage(this.usersKey, users); }
+  isLoggedIn() { return this.currentUser !== null; }
+  getCurrentUser() { return this.currentUser; }
+
+  // ── Core operations ───────────────────────────────────────────
+  register({ fullName, email, password, phone }) {
+    fullName = String(fullName || '').trim();
+    email = String(email || '').trim().toLowerCase();
+    phone = String(phone || '').trim();
+
+    if (fullName.length < 2) return { success: false, message: 'Please enter your full name.', field: 'fullName' };
+    if (!validateEmail(email)) return { success: false, message: 'Please enter a valid email address.', field: 'email' };
+    if (phone && !validatePhone(phone)) return { success: false, message: 'Enter a valid 10-digit phone number or leave it empty.', field: 'phone' };
+    if (!password || password.length < 6) return { success: false, message: 'Password must be at least 6 characters.', field: 'password' };
+
+    const users = this.getAllUsers();
+    if (users.find(u => u.email === email)) return { success: false, message: 'This email is already registered. Try signing in.', field: 'email' };
+
+    const newUser = {
+      id: generateId('user'),
+      fullName, email, phone,
+      password: this.hashPassword(password),
+      address: { line1: '', line2: '', city: '', state: '', pin: '' },
+      createdAt: new Date().toISOString()
+    };
+    users.push(newUser);
+    this.saveAllUsers(users);
+
+    this.currentUser = this.publicUser(newUser);
+    this.persistSession(true);
+    this.updateUI();
+    return { success: true, message: 'Account created successfully!', user: this.currentUser };
+  }
+
+  login(email, password, remember = false) {
+    email = String(email || '').trim().toLowerCase();
+    if (!email || !password) return { success: false, message: 'Email and password are required.' };
+    if (!validateEmail(email)) return { success: false, message: 'Please enter a valid email address.', field: 'email' };
+
+    const user = this.getAllUsers().find(u => u.email === email);
+    if (!user || user.password !== this.hashPassword(password)) {
+      return { success: false, message: 'Incorrect email or password.' };
     }
+    this.currentUser = this.publicUser(user);
+    this.persistSession(remember);
+    this.updateUI();
+    return { success: true, message: 'Login successful!', user: this.currentUser };
+  }
 
-    init() {
-        console.log('Auth Manager Initializing...');
-        this.loadCurrentUser();
-        this.setupEventListeners();
-        this.updateUI();
+  logout() {
+    this.currentUser = null;
+    this.clearSession();
+    this.updateUI();
+    const dd = document.querySelector('.user-profile-dropdown'); if (dd) dd.remove();
+    const protectedPage = /(dashboard|profile|orders)\.html/.test(location.pathname);
+    if (protectedPage) { location.href = pageUrl('index.html'); return; }
+    showNotification('You have been logged out.', 'info');
+  }
+
+  updateProfile(updates) {
+    if (!this.currentUser) return { success: false, message: 'Please log in first.' };
+    const clean = {};
+    if ('fullName' in updates) {
+      const n = String(updates.fullName).trim();
+      if (n.length < 2) return { success: false, message: 'Please enter your full name.', field: 'fullName' };
+      clean.fullName = n;
     }
-
-    // Load current user from localStorage
-    loadCurrentUser() {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-            this.currentUser = JSON.parse(saved);
-            console.log('User loaded:', this.currentUser.email);
-        }
+    if ('phone' in updates) {
+      const p = String(updates.phone).trim();
+      if (p && !validatePhone(p)) return { success: false, message: 'Enter a valid 10-digit phone number.', field: 'phone' };
+      clean.phone = p;
     }
+    if ('address' in updates) clean.address = { ...(this.currentUser.address || {}), ...updates.address };
 
-    // Save current user to localStorage
-    saveCurrentUser() {
-        if (this.currentUser) {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.currentUser));
-        } else {
-            localStorage.removeItem(this.storageKey);
-        }
-    }
+    const users = this.getAllUsers();
+    const i = users.findIndex(u => u.id === this.currentUser.id);
+    if (i === -1) return { success: false, message: 'Account not found.' };
+    users[i] = { ...users[i], ...clean };
+    this.saveAllUsers(users);
+    this.currentUser = this.publicUser(users[i]);
+    this.persistSession(this.isRemembered());
+    this.updateUI();
+    return { success: true, message: 'Profile updated successfully!' };
+  }
 
-    // Get all users from localStorage
-    getAllUsers() {
-        const saved = localStorage.getItem(this.usersKey);
-        return saved ? JSON.parse(saved) : [];
-    }
+  changePassword(currentPassword, newPassword) {
+    if (!this.currentUser) return { success: false, message: 'Please log in first.' };
+    const users = this.getAllUsers();
+    const user = users.find(u => u.id === this.currentUser.id);
+    if (!user || user.password !== this.hashPassword(currentPassword)) return { success: false, message: 'Current password is incorrect.', field: 'currentPassword' };
+    if (!newPassword || newPassword.length < 6) return { success: false, message: 'New password must be at least 6 characters.', field: 'newPassword' };
+    if (newPassword === currentPassword) return { success: false, message: 'New password must be different from the current one.', field: 'newPassword' };
+    user.password = this.hashPassword(newPassword);
+    this.saveAllUsers(users);
+    return { success: true, message: 'Password changed successfully!' };
+  }
 
-    // Save all users to localStorage
-    saveAllUsers(users) {
-        localStorage.setItem(this.usersKey, JSON.stringify(users));
-    }
+  // Frontend-only reset (no email can be sent without a backend).
+  resetPassword(email, newPassword) {
+    email = String(email || '').trim().toLowerCase();
+    const users = this.getAllUsers();
+    const user = users.find(u => u.email === email);
+    if (!user) return { success: false, message: 'No account found with that email.', field: 'email' };
+    if (!newPassword || newPassword.length < 6) return { success: false, message: 'New password must be at least 6 characters.', field: 'newPassword' };
+    user.password = this.hashPassword(newPassword);
+    this.saveAllUsers(users);
+    return { success: true, message: 'Password updated. You can sign in now.' };
+  }
 
-    // Check if user is logged in
-    isLoggedIn() {
-        return this.currentUser !== null;
-    }
+  deleteAccount() {
+    if (!this.currentUser) return { success: false, message: 'Please log in first.' };
+    const id = this.currentUser.id;
+    this.saveAllUsers(this.getAllUsers().filter(u => u.id !== id));
+    this.currentUser = null; this.clearSession();
+    return { success: true };
+  }
 
-    // Get current user
-    getCurrentUser() {
-        return this.currentUser;
-    }
+  // Run `callback` now if logged in, otherwise ask for login first.
+  requireLogin(callback, message = 'Please sign in to continue.') {
+    if (this.isLoggedIn()) { callback(); return true; }
+    this.pendingAction = callback;
+    this.showAuthModal('login', message);
+    return false;
+  }
 
-    // Register new user
-    register(userData) {
-        const { fullName, email, password, phone } = userData;
+  // ── Header UI ─────────────────────────────────────────────────
+  getFirstName() { return this.currentUser ? (this.currentUser.fullName || '').trim().split(/\s+/)[0] : ''; }
+  getUserInitials() {
+    if (!this.currentUser) return '??';
+    const parts = (this.currentUser.fullName || '').trim().split(/\s+/);
+    return ((parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : (parts[0]?.[1] || ''))).toUpperCase();
+  }
 
-        // Validation
-        if (!this.validateEmail(email)) {
-            return { success: false, message: 'Invalid email address' };
-        }
+  updateUI() {
+    document.querySelectorAll('#profileBtn').forEach(btn => {
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('aria-haspopup', 'true');
+      if (this.isLoggedIn()) {
+        btn.innerHTML = `<span class="material-symbols-outlined action_icon">account_circle</span>` +
+                        `<span class="action_name">${escapeHtml(this.getFirstName())}</span>`;
+      } else {
+        btn.innerHTML = `<span class="material-symbols-outlined action_icon">person</span>` +
+                        `<span class="action_name">Login</span>`;
+      }
+    });
+    document.dispatchEvent(new CustomEvent('auth:changed'));
+  }
 
-        if (password.length < 6) {
-            return { success: false, message: 'Password must be at least 6 characters' };
-        }
+  // ── Dropdown ──────────────────────────────────────────────────
+  toggleUserDropdown() {
+    let dd = document.querySelector('.user-profile-dropdown');
+    if (dd) { dd.remove(); return; }
+    dd = document.createElement('div');
+    dd.className = 'user-profile-dropdown show';
+    dd.innerHTML = `
+      <div class="dropdown-header">
+        <div class="user-avatar">${escapeHtml(this.getUserInitials())}</div>
+        <div class="user-name">${escapeHtml(this.currentUser.fullName)}</div>
+        <div class="user-email">${escapeHtml(this.currentUser.email)}</div>
+      </div>
+      <div class="dropdown-menu">
+        <a href="${pageUrl('pages/dashboard.html')}" class="dropdown-item"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+        <a href="${pageUrl('pages/profile.html')}" class="dropdown-item"><span class="material-symbols-outlined">person</span><span>My Profile</span></a>
+        <a href="${pageUrl('pages/orders.html')}" class="dropdown-item"><span class="material-symbols-outlined">shopping_bag</span><span>My Orders</span></a>
+        <a href="${pageUrl('pages/wishlist.html')}" class="dropdown-item"><span class="material-symbols-outlined">favorite</span><span>Wishlist</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="${pageUrl('pages/profile.html')}#security" class="dropdown-item"><span class="material-symbols-outlined">settings</span><span>Settings</span></a>
+      </div>
+      <div class="dropdown-footer">
+        <button type="button" class="logout-btn" id="logoutBtn"><span class="material-symbols-outlined">logout</span><span>Logout</span></button>
+      </div>`;
+    document.body.appendChild(dd);
+    dd.querySelector('#logoutBtn').addEventListener('click', () => this.logout());
+  }
 
-        // Check if user already exists
-        const users = this.getAllUsers();
-        if (users.find(u => u.email === email)) {
-            return { success: false, message: 'Email already registered' };
-        }
+  // ── Modal ─────────────────────────────────────────────────────
+  showAuthModal(mode = 'login', notice = '') {
+    let modal = document.getElementById('authModal');
+    if (!modal) { modal = this.createAuthModal(); document.body.appendChild(modal); }
+    this.switchAuthMode(mode);
+    modal.classList.add('show');
+    document.body.classList.add('no-scroll');
+    if (notice) this.showMessage(notice, 'info');
+    setTimeout(() => { const f = modal.querySelector('.auth-form.active input'); if (f) f.focus(); }, 60);
+  }
 
-        // Create new user
-        const newUser = {
-            id: this.generateId(),
-            fullName,
-            email,
-            password: this.hashPassword(password), // In production, use proper hashing
-            phone: phone || '',
-            createdAt: new Date().toISOString(),
-            orders: [],
-            addresses: [],
-            wishlist: [],
-            cart: []
-        };
+  closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.classList.remove('show');
+    document.body.classList.remove('no-scroll');
+    this.pendingAction = null;
+  }
 
-        // Save user
-        users.push(newUser);
-        this.saveAllUsers(users);
+  createAuthModal() {
+    const modal = document.createElement('div');
+    modal.id = 'authModal';
+    modal.className = 'auth-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `
+      <div class="auth-container">
+        <button type="button" class="auth-close" aria-label="Close" data-auth-close>&times;</button>
+        <div class="auth-header">
+          <div class="auth-logo">ITY</div>
+          <h2 id="authTitle">Welcome Back</h2>
+          <p id="authSubtitle">Sign in to your account</p>
+        </div>
+        <div class="auth-body">
+          <div id="authMessage" class="auth-message" role="status"></div>
 
-        // Auto login
-        this.currentUser = { ...newUser };
-        delete this.currentUser.password; // Don't store password in current session
-        this.saveCurrentUser();
-        this.updateUI();
-
-        console.log('User registered:', email);
-        return { success: true, message: 'Account created successfully!', user: this.currentUser };
-    }
-
-    // Login user
-    login(email, password, remember = false) {
-        // Validation
-        if (!email || !password) {
-            return { success: false, message: 'Email and password are required' };
-        }
-
-        // Find user
-        const users = this.getAllUsers();
-        const user = users.find(u => u.email === email);
-
-        if (!user) {
-            return { success: false, message: 'Invalid email or password' };
-        }
-
-        // Check password
-        if (user.password !== this.hashPassword(password)) {
-            return { success: false, message: 'Invalid email or password' };
-        }
-
-        // Login successful
-        this.currentUser = { ...user };
-        delete this.currentUser.password;
-        this.saveCurrentUser();
-        this.updateUI();
-
-        console.log('User logged in:', email);
-        return { success: true, message: 'Login successful!', user: this.currentUser };
-    }
-
-    // Logout user
-    logout() {
-        this.currentUser = null;
-        this.saveCurrentUser();
-        this.updateUI();
-        console.log('User logged out');
-        
-        // Redirect to home if on protected page
-        if (window.location.pathname.includes('dashboard') || 
-            window.location.pathname.includes('profile')) {
-            window.location.href = '../index.html';
-        }
-    }
-
-    // Update user profile
-    updateProfile(updates) {
-        if (!this.currentUser) {
-            return { success: false, message: 'Not logged in' };
-        }
-
-        // Update current user
-        this.currentUser = { ...this.currentUser, ...updates };
-        this.saveCurrentUser();
-
-        // Update in users list
-        const users = this.getAllUsers();
-        const index = users.findIndex(u => u.id === this.currentUser.id);
-        if (index !== -1) {
-            users[index] = { ...users[index], ...updates };
-            this.saveAllUsers(users);
-        }
-
-        console.log('updated');
-        return { success: true, message: 'Profile updated successfully!' };
-    }
-
-    // Change password
-    changePassword(currentPassword, newPassword) {
-        if (!this.currentUser) {
-            return { success: false, message: 'Not logged in' };
-        }
-
-        const users = this.getAllUsers();
-        const user = users.find(u => u.id === this.currentUser.id);
-
-        if (!user || user.password !== this.hashPassword(currentPassword)) {
-            return { success: false, message: 'Current password is incorrect' };
-        }
-
-        if (newPassword.length < 6) {
-            return { success: false, message: 'New password must be at least 6 characters' };
-        }
-
-        // Update password
-        user.password = this.hashPassword(newPassword);
-        this.saveAllUsers(users);
-
-        console.log('Password changed');
-        return { success: true, message: 'Password changed successfully!' };
-    }
-
-    // Update UI based on auth state
-    updateUI() {
-        const profileBtn = document.getElementById('profileBtn');
-        if (!profileBtn) return;
-
-        if (this.isLoggedIn()) {
-            // Show user menu
-            profileBtn.innerHTML = `
-                <span class="material-symbols-outlined action_icon">account_circle</span>
-                <span class="action_name">${this.getFirstName()}</span>
-            `;
-            
-            // Remove old click handler and add new one
-            const newProfileBtn = profileBtn.cloneNode(true);
-            profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
-            
-            newProfileBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.toggleUserDropdown();
-            });
-        } else {
-            // Show login button
-            profileBtn.innerHTML = `
-                <span class="material-symbols-outlined action_icon">person</span>
-                <span class="action_name">Login</span>
-            `;
-            
-            // Remove old click handler and add new one
-            const newProfileBtn = profileBtn.cloneNode(true);
-            profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
-            
-            newProfileBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.showAuthModal('login');
-            });
-        }
-    }
-
-    // Get first name from full name
-    getFirstName() {
-        if (!this.currentUser) return '';
-        return this.currentUser.fullName.split(' ')[0];
-    }
-
-    // Get user initials
-    getUserInitials() {
-        if (!this.currentUser) return '??';
-        const names = this.currentUser.fullName.split(' ');
-        if (names.length >= 2) {
-            return (names[0][0] + names[1][0]).toUpperCase();
-        }
-        return names[0].substring(0, 2).toUpperCase();
-    }
-
-    // Toggle user dropdown
-    toggleUserDropdown() {
-        let dropdown = document.querySelector('.user-profile-dropdown');
-        
-        if (!dropdown) {
-            dropdown = this.createUserDropdown();
-            document.body.appendChild(dropdown);
-        }
-        
-        dropdown.classList.toggle('show');
-        
-        // Close on outside click
-        if (dropdown.classList.contains('show')) {
-            setTimeout(() => {
-                document.addEventListener('click', this.closeDropdownOnOutsideClick);
-            }, 10);
-        }
-    }
-
-    // Create user dropdown menu
-    createUserDropdown() {
-        const dropdown = document.createElement('div');
-        dropdown.className = 'user-profile-dropdown';
-        dropdown.style.position = 'fixed';
-        dropdown.style.top = '90px';
-        dropdown.style.right = '3rem';
-        
-        dropdown.innerHTML = `
-            <div class="dropdown-header">
-                <div class="user-avatar">${this.getUserInitials()}</div>
-                <div class="user-name">${this.currentUser.fullName}</div>
-                <div class="user-email">${this.currentUser.email}</div>
+          <form id="loginForm" class="auth-form active" novalidate>
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" name="email" placeholder="your@email.com" autocomplete="email">
             </div>
-            <div class="dropdown-menu">
-                <a href="pages/dashboard.html" class="dropdown-item">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a href="pages/profile.html" class="dropdown-item">
-                    <span class="material-symbols-outlined">person</span>
-                    <span>My Profile</span>
-                </a>
-                <a href="pages/orders.html" class="dropdown-item">
-                    <span class="material-symbols-outlined">shopping_bag</span>
-                    <span>My Orders</span>
-                </a>
-                <a href="pages/wishlist.html" class="dropdown-item">
-                    <span class="material-symbols-outlined">favorite</span>
-                    <span>Wishlist</span>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item" onclick="authManager.showAuthModal('settings'); return false;">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Settings</span>
-                </a>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" name="password" placeholder="Enter your password" autocomplete="current-password">
+              <button type="button" class="password-toggle" data-toggle-pw="loginPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button>
             </div>
-            <div class="dropdown-footer">
-                <button class="logout-btn" onclick="authManager.logout()">
-                    <span class="material-symbols-outlined">logout</span>
-                    <span>Logout</span>
-                </button>
+            <div class="form-options">
+              <label class="remember-me"><input type="checkbox" name="remember" checked><span>Remember me</span></label>
+              <a href="#" class="forgot-password" data-auth-mode="forgot">Forgot password?</a>
             </div>
-        `;
-        
-        return dropdown;
-    }
+            <button type="submit" class="auth-submit-btn">Sign In</button>
+          </form>
 
-    // Close dropdown on outside click
-    closeDropdownOnOutsideClick = (e) => {
-        const dropdown = document.querySelector('.user-profile-dropdown');
-        const profileBtn = document.getElementById('profileBtn');
-        
-        if (dropdown && !dropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-            dropdown.classList.remove('show');
-            document.removeEventListener('click', this.closeDropdownOnOutsideClick);
-        }
-    }
-
-    // Show auth modal
-    showAuthModal(mode = 'login') {
-        let modal = document.getElementById('authModal');
-        
-        if (!modal) {
-            modal = this.createAuthModal();
-            document.body.appendChild(modal);
-        }
-        
-        this.switchAuthMode(mode);
-        modal.classList.add('show');
-    }
-
-    // Create auth modal
-    createAuthModal() {
-        const modal = document.createElement('div');
-        modal.id = 'authModal';
-        modal.className = 'auth-modal';
-        
-        modal.innerHTML = `
-            <div class="auth-container">
-                <button class="auth-close" onclick="authManager.closeAuthModal()">&times;</button>
-                
-                <div class="auth-header">
-                    <div class="auth-logo">ITY</div>
-                    <h2 id="authTitle">Welcome Back</h2>
-                    <p id="authSubtitle">Sign in to your account</p>
-                </div>
-                
-                <div class="auth-body">
-                    <div id="authMessage" class="auth-message"></div>
-                    
-                    <!-- Login Form -->
-                    <form id="loginForm" class="auth-form active" onsubmit="authManager.handleLogin(event)">
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" name="email" placeholder="your@email.com" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
-                            <button type="button" class="password-toggle" onclick="authManager.togglePassword('loginPassword')">
-                                <span class="material-symbols-outlined">visibility</span>
-                            </button>
-                        </div>
-                        
-                        <div class="form-options">
-                            <label class="remember-me">
-                                <input type="checkbox" name="remember">
-                                <span>Remember me</span>
-                            </label>
-                            <a href="#" class="forgot-password" onclick="authManager.showAuthModal('forgot'); return false;">Forgot password?</a>
-                        </div>
-                        
-                        <button type="submit" class="auth-submit-btn">Sign In</button>
-                    </form>
-                    
-                    <!-- Register Form -->
-                    <form id="registerForm" class="auth-form" onsubmit="authManager.handleRegister(event)">
-                        <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" name="fullName" placeholder="John Doe" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" name="email" placeholder="your@email.com" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Phone Number (Optional)</label>
-                            <input type="tel" name="phone" placeholder="+1 234 567 8900">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" name="password" id="registerPassword" placeholder="At least 6 characters" required>
-                            <button type="button" class="password-toggle" onclick="authManager.togglePassword('registerPassword')">
-                                <span class="material-symbols-outlined">visibility</span>
-                            </button>
-                        </div>
-                        
-                        <button type="submit" class="auth-submit-btn">Create Account</button>
-                    </form>
-                    
-                    <!-- Social Login -->
-                    <div class="social-login">
-                        <div class="social-divider"><span>Or continue with</span></div>
-                        <div class="social-buttons">
-                            <button class="social-btn" onclick="authManager.socialLogin('google')">
-                                <span>🔍</span> Google
-                            </button>
-                            <button class="social-btn" onclick="authManager.socialLogin('facebook')">
-                                <span>📘</span> Facebook
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="auth-toggle">
-                        <span id="authToggleText">Don't have an account?</span>
-                        <a href="#" id="authToggleLink" onclick="authManager.toggleAuthMode(); return false;">Sign Up</a>
-                    </div>
-                </div>
+          <form id="registerForm" class="auth-form" novalidate>
+            <div class="form-group">
+              <label for="regName">Full Name</label>
+              <input type="text" id="regName" name="fullName" placeholder="John Doe" autocomplete="name">
             </div>
-        `;
-        
-        return modal;
-    }
+            <div class="form-group">
+              <label for="regEmail">Email Address</label>
+              <input type="email" id="regEmail" name="email" placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="regPhone">Phone Number (Optional)</label>
+              <input type="tel" id="regPhone" name="phone" placeholder="10-digit mobile number" autocomplete="tel" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Password</label>
+              <input type="password" id="regPassword" name="password" placeholder="At least 6 characters" autocomplete="new-password">
+              <button type="button" class="password-toggle" data-toggle-pw="regPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button>
+            </div>
+            <div class="form-group">
+              <label for="regConfirm">Confirm Password</label>
+              <input type="password" id="regConfirm" name="confirm" placeholder="Re-enter password" autocomplete="new-password">
+            </div>
+            <button type="submit" class="auth-submit-btn">Create Account</button>
+          </form>
 
-    // Close auth modal
-    closeAuthModal() {
-        const modal = document.getElementById('authModal');
-        if (modal) {
-            modal.classList.remove('show');
-        }
-    }
+          <form id="forgotForm" class="auth-form" novalidate>
+            <div class="form-group">
+              <label for="forgotEmail">Account Email</label>
+              <input type="email" id="forgotEmail" name="email" placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="form-group" id="forgotNewWrap" style="display:none">
+              <label for="forgotNew">New Password</label>
+              <input type="password" id="forgotNew" name="newPassword" placeholder="At least 6 characters" autocomplete="new-password">
+              <button type="button" class="password-toggle" data-toggle-pw="forgotNew" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="forgotSubmit">Find My Account</button>
+          </form>
 
-    // Switch between login/register
-    switchAuthMode(mode) {
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const title = document.getElementById('authTitle');
-        const subtitle = document.getElementById('authSubtitle');
-        const toggleText = document.getElementById('authToggleText');
-        const toggleLink = document.getElementById('authToggleLink');
-        
-        if (mode === 'login') {
-            loginForm.classList.add('active');
-            registerForm.classList.remove('active');
-            title.textContent = 'Welcome Back';
-            subtitle.textContent = 'Sign in to your account';
-            toggleText.textContent = "Don't have an account?";
-            toggleLink.textContent = 'Sign Up';
-        } else {
-            loginForm.classList.remove('active');
-            registerForm.classList.add('active');
-            title.textContent = 'Create Account';
-            subtitle.textContent = 'Join I-ArtWorks today';
-            toggleText.textContent = 'Already have an account?';
-            toggleLink.textContent = 'Sign In';
-        }
-        
-        this.hideMessage();
-    }
+          <div class="auth-toggle">
+            <span id="authToggleText">Don't have an account?</span>
+            <a href="#" id="authToggleLink" data-auth-toggle>Sign Up</a>
+          </div>
+        </div>
+      </div>`;
 
-    // Toggle between login and register
-    toggleAuthMode() {
-        const loginForm = document.getElementById('loginForm');
-        const isLogin = loginForm.classList.contains('active');
-        this.switchAuthMode(isLogin ? 'register' : 'login');
-    }
+    // Event wiring (no inline handlers)
+    modal.addEventListener('click', e => {
+      if (e.target === modal || e.target.closest('[data-auth-close]')) { this.closeAuthModal(); return; }
+      const pw = e.target.closest('[data-toggle-pw]');
+      if (pw) { this.togglePassword(pw.dataset.togglePw); return; }
+      const modeLink = e.target.closest('[data-auth-mode]');
+      if (modeLink) { e.preventDefault(); this.switchAuthMode(modeLink.dataset.authMode); return; }
+      if (e.target.closest('[data-auth-toggle]')) { e.preventDefault(); this.toggleAuthMode(); }
+    });
+    modal.querySelector('#loginForm').addEventListener('submit', e => this.handleLogin(e));
+    modal.querySelector('#registerForm').addEventListener('submit', e => this.handleRegister(e));
+    modal.querySelector('#forgotForm').addEventListener('submit', e => this.handleForgot(e));
+    return modal;
+  }
 
-    // Handle login form submission
-    handleLogin(event) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        
-        const email = formData.get('email');
-        const password = formData.get('password');
-        const remember = formData.get('remember') === 'on';
-        
-        const result = this.login(email, password, remember);
-        
-        if (result.success) {
-            this.showMessage(result.message, 'success');
-            setTimeout(() => {
-                this.closeAuthModal();
-                form.reset();
-            }, 1000);
-        } else {
-            this.showMessage(result.message, 'error');
-        }
-    }
+  switchAuthMode(mode) {
+    const forms = { login: 'loginForm', register: 'registerForm', forgot: 'forgotForm' };
+    if (!forms[mode]) mode = 'login';
+    Object.entries(forms).forEach(([m, id]) => {
+      const f = document.getElementById(id); if (f) f.classList.toggle('active', m === mode);
+    });
+    const copy = {
+      login:    ['Welcome Back', 'Sign in to your account', "Don't have an account?", 'Sign Up'],
+      register: ['Create Account', 'Join I-ArtWorks today', 'Already have an account?', 'Sign In'],
+      forgot:   ['Reset Password', 'Enter your account email to set a new password', 'Remembered it?', 'Sign In']
+    }[mode];
+    document.getElementById('authTitle').textContent = copy[0];
+    document.getElementById('authSubtitle').textContent = copy[1];
+    document.getElementById('authToggleText').textContent = copy[2];
+    document.getElementById('authToggleLink').textContent = copy[3];
+    document.getElementById('authModal').dataset.mode = mode;
+    if (mode === 'forgot') this.resetForgotFlow();
+    this.hideMessage();
+    document.querySelectorAll('#authModal .field-error').forEach(el => el.remove());
+    document.querySelectorAll('#authModal .input-invalid').forEach(el => el.classList.remove('input-invalid'));
+  }
 
-    // Handle register form submission
-    handleRegister(event) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        
-        const userData = {
-            fullName: formData.get('fullName'),
-            email: formData.get('email'),
-            password: formData.get('password'),
-            phone: formData.get('phone')
-        };
-        
-        const result = this.register(userData);
-        
-        if (result.success) {
-            this.showMessage(result.message, 'success');
-            setTimeout(() => {
-                this.closeAuthModal();
-                form.reset();
-            }, 1000);
-        } else {
-            this.showMessage(result.message, 'error');
-        }
-    }
+  toggleAuthMode() {
+    const mode = document.getElementById('authModal')?.dataset.mode || 'login';
+    this.switchAuthMode(mode === 'login' ? 'register' : 'login');
+  }
 
-    // Show message in modal
-    showMessage(message, type = 'success') {
-        const messageEl = document.getElementById('authMessage');
-        if (messageEl) {
-            messageEl.textContent = message;
-            messageEl.className = `auth-message ${type} show`;
-        }
-    }
+  resetForgotFlow() {
+    this.resetEmail = null;
+    const wrap = document.getElementById('forgotNewWrap'); if (wrap) wrap.style.display = 'none';
+    const em = document.getElementById('forgotEmail'); if (em) em.readOnly = false;
+    const btn = document.getElementById('forgotSubmit'); if (btn) btn.textContent = 'Find My Account';
+  }
 
-    // Hide message
-    hideMessage() {
-        const messageEl = document.getElementById('authMessage');
-        if (messageEl) {
-            messageEl.classList.remove('show');
-        }
-    }
+  // ── Form handlers ─────────────────────────────────────────────
+  afterAuthSuccess(form, message) {
+    this.showMessage(message, 'success');
+    const action = this.pendingAction; this.pendingAction = null;
+    setTimeout(() => {
+      this.closeAuthModal(); form.reset();
+      if (action) { action(); return; }
+      const next = getQueryParam('next');
+      if (next && getQueryParam('login') === '1' && /^[\w\-./]+(\?[\w=&%\-.]*)?(#[\w\-]*)?$/.test(next) && !next.startsWith('//')) {
+        location.href = pageUrl(next);
+      }
+    }, 700);
+  }
 
-    // Toggle password visibility
-    togglePassword(fieldId) {
-        const field = document.getElementById(fieldId);
-        const button = field.parentElement.querySelector('.password-toggle');
-        const icon = button.querySelector('.material-symbols-outlined');
-        
-        if (field.type === 'password') {
-            field.type = 'text';
-            icon.textContent = 'visibility_off';
-        } else {
-            field.type = 'password';
-            icon.textContent = 'visibility';
-        }
-    }
+  handleLogin(event) {
+    event.preventDefault();
+    const form = event.target; const fd = new FormData(form);
+    ['email', 'password'].forEach(n => setFieldError(form.elements[n], ''));
+    const result = this.login(fd.get('email'), fd.get('password'), fd.get('remember') === 'on');
+    if (result.success) { this.afterAuthSuccess(form, result.message); return; }
+    if (result.field && form.elements[result.field]) setFieldError(form.elements[result.field], result.message);
+    this.showMessage(result.message, 'error');
+  }
 
-    // Social login (placeholder)
-    socialLogin(provider) {
-        alert(`Social login with ${provider} will be implemented with backend integration.`);
+  handleRegister(event) {
+    event.preventDefault();
+    const form = event.target; const fd = new FormData(form);
+    ['fullName', 'email', 'phone', 'password', 'confirm'].forEach(n => setFieldError(form.elements[n], ''));
+    if (fd.get('password') !== fd.get('confirm')) {
+      setFieldError(form.elements.confirm, 'Passwords do not match.');
+      this.showMessage('Passwords do not match.', 'error'); return;
     }
+    const result = this.register({
+      fullName: fd.get('fullName'), email: fd.get('email'), phone: fd.get('phone'), password: fd.get('password')
+    });
+    if (result.success) { this.afterAuthSuccess(form, result.message); return; }
+    if (result.field && form.elements[result.field]) setFieldError(form.elements[result.field], result.message);
+    this.showMessage(result.message, 'error');
+  }
 
-    // Utility functions
-    validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
+  handleForgot(event) {
+    event.preventDefault();
+    const form = event.target;
+    const emailInput = form.elements.email; const newInput = form.elements.newPassword;
+    setFieldError(emailInput, ''); setFieldError(newInput, '');
 
-    hashPassword(password) {
-        // Simple hash for demo - use proper hashing in production
-        let hash = 0;
-        for (let i = 0; i < password.length; i++) {
-            const char = password.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return hash.toString();
+    if (!this.resetEmail) {                       // step 1: find account
+      const email = emailInput.value.trim().toLowerCase();
+      if (!validateEmail(email)) { setFieldError(emailInput, 'Please enter a valid email address.'); return; }
+      if (!this.getAllUsers().some(u => u.email === email)) { setFieldError(emailInput, 'No account found with that email.'); return; }
+      this.resetEmail = email; emailInput.readOnly = true;
+      document.getElementById('forgotNewWrap').style.display = '';
+      document.getElementById('forgotSubmit').textContent = 'Set New Password';
+      this.showMessage('Account found. Choose a new password.', 'info');
+      newInput.focus(); return;
     }
+    const result = this.resetPassword(this.resetEmail, newInput.value);   // step 2
+    if (!result.success) { setFieldError(newInput, result.message); return; }
+    form.reset(); this.switchAuthMode('login');
+    this.showMessage(result.message, 'success');
+  }
 
-    generateId() {
-        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
+  showMessage(message, type = 'success') {
+    const el = document.getElementById('authMessage');
+    if (el) { el.textContent = message; el.className = `auth-message ${type} show`; }
+  }
+  hideMessage() { const el = document.getElementById('authMessage'); if (el) el.classList.remove('show'); }
 
-    // Setup event listeners
-    setupEventListeners() {
-        // Close modal on outside click
-        document.addEventListener('click', (e) => {
-            const modal = document.getElementById('authModal');
-            if (modal && e.target === modal) {
-                this.closeAuthModal();
-            }
-        });
-        
-        // Close modal on ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeAuthModal();
-                const dropdown = document.querySelector('.user-profile-dropdown');
-                if (dropdown) {
-                    dropdown.classList.remove('show');
-                }
-            }
-        });
-    }
+  togglePassword(fieldId) {
+    const field = document.getElementById(fieldId); if (!field) return;
+    const btn = field.parentElement.querySelector('.password-toggle');
+    const icon = btn.querySelector('.material-symbols-outlined');
+    const show = field.type === 'password';
+    field.type = show ? 'text' : 'password';
+    icon.textContent = show ? 'visibility_off' : 'visibility';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  }
+
+  // Lightweight demo hash (kept identical to the previous version so existing accounts still work).
+  hashPassword(password) {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) { hash = ((hash << 5) - hash) + password.charCodeAt(i); hash = hash & hash; }
+    return hash.toString();
+  }
+
+  setupEventListeners() {
+    document.addEventListener('click', e => {
+      // profile / login button in the header (and in the mobile drawer)
+      const trigger = e.target.closest('#profileBtn, [data-open-account]');
+      if (trigger) {
+        e.preventDefault();
+        if (this.isLoggedIn()) this.toggleUserDropdown(); else this.showAuthModal('login');
+        return;
+      }
+      // click outside the dropdown closes it
+      const dd = document.querySelector('.user-profile-dropdown');
+      if (dd && !dd.contains(e.target)) dd.remove();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      this.closeAuthModal();
+      const dd = document.querySelector('.user-profile-dropdown'); if (dd) dd.remove();
+    });
+  }
 }
 
-// Initialize auth manager
 const authManager = new AuthManager();
+window.authManager = authManager;
 
-// Export for global use
-if (typeof window !== 'undefined') {
-    window.authManager = authManager;
+// Used by dashboard / profile / orders: if nobody is signed in, go home,
+// open the login dialog, and come back here afterwards.
+function requireAccountPage() {
+  if (authManager.isLoggedIn()) return true;
+  const here = location.pathname.split('/').pop() || 'index.html';
+  location.replace(pageUrl('index.html') + '?login=1&next=' + encodeURIComponent('pages/' + here));
+  return false;
 }

@@ -1,44 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Bag - I-ArtWorks</title>
-    <meta name="description" content="Review your selected artworks and complete your purchase.">
-    <link rel="stylesheet" href="../css/bag.css"/>
-        <link rel="stylesheet" href="../css/style-premium.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopping Bag - I-ArtWorks</title>
+  <meta name="description" content="Review your selected artworks and complete your purchase.">
+  <meta name="theme-color" content="#f54e77">
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/style-premium.css">
+  <link rel="stylesheet" href="../css/bag.css">
+  <link rel="stylesheet" href="../css/wishlist.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="stylesheet" href="../css/layout.css">
 </head>
 <body>
-   <!-- Header -->
    <header>
+      <button class="menu-btn" type="button" aria-label="Open menu">☰</button>
       <div class="logo_container">
-        <a href="/index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        <a href="../index.html"><img class="Imax_home" src="../images/logo.png" alt="I-ArtWorks" width="80" height="80"></a>
       </div>
-      <nav class="nav_bar">
-                <a href="../index.html#gallery">Gallery</a>
-        <a href="../pages/commission.html" class="active">Commissions</a>
+      <nav class="nav_bar" aria-label="Main">
+        <a href="../index.html#gallery">Gallery</a>
+        <a href="commission.html">Commissions</a>
         <a href="../index.html#about">About</a>
         <a href="../index.html#contact">Contact</a>
       </nav>
       <div class="action_bar">
-        <a class="action_container" href="wishlist.html" id="wishlistBtn">
+        <a class="action_container" href="wishlist.html" id="wishlistBtn" aria-label="Wishlist">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
           <span class="wishlist-badge">0</span>
         </a>
-        <a class="action_container" href="#" id="profileBtn">
+        <a class="action_container" href="#" id="profileBtn" aria-label="Account">
           <span class="material-symbols-outlined action_icon">person</span>
-          <span class="action_name">Profile</span>
+          <span class="action_name">Login</span>
         </a>
-        <a class="action_container" href="bag.html">
+        <a class="action_container" href="bag.html" aria-label="Shopping bag">
           <span class="material-symbols-outlined action_icon">shopping_bag</span>
           <span class="action_name">Bag</span>
           <span class="bag-item-count">0</span>
         </a>
       </div>
-   </header>
+    </header>
 
    <!-- Breadcrumb -->
    <div class="breadcrumb">
@@ -72,7 +79,7 @@
 
             <!-- Recommended Products -->
             <div class="recommended-section" id="recommendedSection" style="display: none;">
-               <h3><i class="fa-solid fa-sparkles"></i> You May Also Like</h3>
+               <h3><i class="fa-solid fa-wand-magic-sparkles"></i> You May Also Like</h3>
                <div class="recommended-grid" id="recommendedGrid"></div>
             </div>
          </div>
@@ -113,9 +120,9 @@
             <div class="help-section">
                <h4><i class="fa-solid fa-circle-question"></i> Need Help?</h4>
                <ul>
-                  <li><a href="#"><i class="fa-solid fa-phone"></i> Contact Support</a></li>
-                  <li><a href="#"><i class="fa-solid fa-truck"></i> Shipping Info</a></li>
-                  <li><a href="#"><i class="fa-solid fa-rotate"></i> Return Policy</a></li>
+                  <li><a href="info.html#support"><i class="fa-solid fa-phone"></i> Contact Support</a></li>
+                  <li><a href="info.html#shipping"><i class="fa-solid fa-truck"></i> Shipping Info</a></li>
+                  <li><a href="info.html#shipping"><i class="fa-solid fa-rotate"></i> Return Policy</a></li>
                </ul>
             </div>
          </div>
@@ -152,7 +159,7 @@
          </div>
          
          <h2>Order Confirmed!</h2>
-         <p class="order-number">Order #<span id="orderNumber">AW-2025-001</span></p>
+         <p class="order-number">Order #<span id="orderNumber">—</span></p>
          <p class="confirmation-message">Thank you for your purchase! Your artwork will be carefully packaged and shipped soon.</p>
          
          <div class="order-details">
@@ -164,10 +171,17 @@
                <i class="fa-solid fa-truck"></i>
                <span>Estimated delivery: <strong id="deliveryDate">5-7 days</strong></span>
             </div>
+            <div class="detail-item">
+               <i class="fa-solid fa-indian-rupee-sign"></i>
+               <span>Amount to pay on delivery: <strong id="orderTotal">—</strong></span>
+            </div>
          </div>
 
          <div class="confirmation-actions">
-            <a href="../index.html" class="btn-primary">
+            <a href="orders.html" class="btn-primary">
+               <i class="fa-solid fa-box"></i> View My Orders
+            </a>
+            <a href="../index.html" class="btn-secondary">
                <i class="fa-solid fa-house"></i> Back to Home
             </a>
             <a href="../index.html#gallery" class="btn-secondary">
@@ -177,22 +191,18 @@
       </div>
    </div>
 
-   <!-- Footer -->
    <footer class="site-footer">
-      <div class="footer-bottom">
-         <div class="footer-copy">
-            © 2025 I-ArtWorks by Imtiyaz | All rights reserved.
-         </div>
-         <div class="footer-links-bottom">
-            <a href="#">Privacy Policy</a> | 
-            <a href="#">Terms of Service</a>
-         </div>
-      </div>
-   </footer>
+        <div class="footer-bottom">
+          <div class="footer-copy">© <span data-year>2026</span> I-ArtWorks by Imtiyaz | All rights reserved.</div>
+          <div class="footer-links-bottom"><a href="info.html#privacy">Privacy Policy</a> | <a href="info.html#terms">Terms of Service</a></div>
+        </div>
+    </footer>
 
-   <script src="../data/artworks.js"></script>
-   <script src="../script/index.js"></script>
-   <script src="../script/bag.js"></script>
-    <script src="../script/wishlist.js"></script>
+  <script src="../data/artworks.js"></script>
+  <script src="../script/utils.js"></script>
+  <script src="../script/store.js"></script>
+  <script src="../script/auth.js"></script>
+  <script src="../script/layout.js"></script>
+  <script src="../script/bag.js"></script>
 </body>
 </html>

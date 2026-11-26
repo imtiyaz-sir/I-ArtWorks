@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Profile | I-ArtWorks</title>
+  <meta name="description" content="Manage your I-ArtWorks profile, address and password">
+  <meta name="theme-color" content="#f54e77">
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="stylesheet" href="../css/wishlist.css">
+  <link rel="stylesheet" href="../css/layout.css">
+</head>
+<body>
+    <header>
+      <button class="menu-btn" type="button" aria-label="Open menu">☰</button>
+      <div class="logo_container">
+        <a href="../index.html"><img class="Imax_home" src="../images/logo.png" alt="I-ArtWorks" width="80" height="80"></a>
+      </div>
+      <nav class="nav_bar" aria-label="Main">
+        <a href="../index.html#gallery">Gallery</a>
+        <a href="commission.html">Commissions</a>
+        <a href="../index.html#about">About</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+      <div class="action_bar">
+        <a class="action_container" href="wishlist.html" id="wishlistBtn" aria-label="Wishlist">
+          <span class="material-symbols-outlined action_icon">favorite</span>
+          <span class="action_name">Wishlist</span>
+          <span class="wishlist-badge">0</span>
+        </a>
+        <a class="action_container" href="#" id="profileBtn" aria-label="Account">
+          <span class="material-symbols-outlined action_icon">person</span>
+          <span class="action_name">Login</span>
+        </a>
+        <a class="action_container" href="bag.html" aria-label="Shopping bag">
+          <span class="material-symbols-outlined action_icon">shopping_bag</span>
+          <span class="action_name">Bag</span>
+          <span class="bag-item-count">0</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="account-main">
+        <div class="dashboard-container narrow">
+            <div class="profile-head">
+                <div class="user-avatar big" id="profileAvatar">??</div>
+                <div><h1 id="profileHeading">My Profile</h1><p id="profileSince"></p></div>
+            </div>
+
+            <section class="dashboard-section">
+                <div class="section-header"><h2 class="section-title">Personal Details</h2></div>
+                <form id="personalForm" class="profile-form" novalidate>
+                    <div class="form-group"><label for="pfName">Full Name</label><input id="pfName" name="fullName" type="text" autocomplete="name"></div>
+                    <div class="form-group"><label for="pfEmail">Email (cannot be changed)</label><input id="pfEmail" type="email" readonly disabled></div>
+                    <div class="form-group"><label for="pfPhone">Phone</label><input id="pfPhone" name="phone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" autocomplete="tel"></div>
+                    <button type="submit" class="auth-submit-btn">Save Changes</button>
+                </form>
+            </section>
+
+            <section class="dashboard-section">
+                <div class="section-header"><h2 class="section-title">Shipping Address</h2></div>
+                <form id="addressForm" class="profile-form" novalidate>
+                    <div class="form-group"><label for="pfLine1">Address Line 1</label><input id="pfLine1" name="line1" type="text" autocomplete="address-line1"></div>
+                    <div class="form-group"><label for="pfLine2">Address Line 2</label><input id="pfLine2" name="line2" type="text" autocomplete="address-line2"></div>
+                    <div class="form-row-2">
+                        <div class="form-group"><label for="pfCity">City</label><input id="pfCity" name="city" type="text" autocomplete="address-level2"></div>
+                        <div class="form-group"><label for="pfState">State</label><input id="pfState" name="state" type="text" autocomplete="address-level1"></div>
+                    </div>
+                    <div class="form-group"><label for="pfPin">PIN Code</label><input id="pfPin" name="pin" type="text" inputmode="numeric" maxlength="6" autocomplete="postal-code"></div>
+                    <button type="submit" class="auth-submit-btn">Save Address</button>
+                </form>
+            </section>
+
+            <section class="dashboard-section" id="security">
+                <div class="section-header"><h2 class="section-title">Password &amp; Security</h2></div>
+                <form id="passwordForm" class="profile-form" novalidate>
+                    <div class="form-group"><label for="currentPassword">Current Password</label><input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password"><button type="button" class="password-toggle" data-toggle-pw="currentPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button></div>
+                    <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" name="newPassword" autocomplete="new-password"><button type="button" class="password-toggle" data-toggle-pw="newPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button></div>
+                    <div class="form-group"><label for="confirmPassword">Confirm New Password</label><input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password"><button type="button" class="password-toggle" data-toggle-pw="confirmPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button></div>
+                    <button type="submit" class="auth-submit-btn">Change Password</button>
+                </form>
+            </section>
+
+            <section class="dashboard-section danger-zone">
+                <div class="section-header"><h2 class="section-title">Account</h2></div>
+                <div class="danger-row">
+                    <button type="button" class="action-btn" id="logoutAllBtn"><span class="material-symbols-outlined">logout</span> Log out</button>
+                    <button type="button" class="action-btn danger" id="deleteAccountBtn"><span class="material-symbols-outlined">delete_forever</span> Delete account</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="footer-main">
+          <div class="footer-col brand-info">
+            <div class="footer-logo">ITY</div>
+            <div class="footer-title">I-ArtWorks by Imtiyaz</div>
+            <p>Discover and collect extraordinary artwork pieces from talented artists worldwide. Each piece curated for authenticity and soul.</p>
+            <div class="footer-social">
+              <a href="../index.html" aria-label="Website" title="Website">🌐</a>
+              <a href="#" data-social="instagram" aria-label="Instagram" title="Instagram" target="_blank" rel="noopener" hidden>📷</a>
+              <a href="#" data-social="facebook" aria-label="Facebook" title="Facebook" target="_blank" rel="noopener" hidden>📘</a>
+              <a href="#" data-social="whatsapp" aria-label="WhatsApp" title="Chat on WhatsApp" target="_blank" rel="noopener">💬</a>
+            </div>
+          </div>
+          <div class="footer-col quick-links">
+            <div class="footer-heading">Quick Links</div>
+            <a href="../index.html#gallery">Gallery</a>
+            <a href="commission.html">Commissions</a>
+            <a href="../index.html#about">About</a>
+            <a href="wishlist.html">Wishlist</a>
+          </div>
+          <div class="footer-col customer-service">
+            <div class="footer-heading">Customer Service</div>
+            <a href="info.html#shipping">Shipping &amp; Returns</a>
+            <a href="info.html#howto">How it works</a>
+            <a href="info.html#faq">FAQ</a>
+            <a href="info.html#support">Support</a>
+          </div>
+          <div class="footer-col stay-updated">
+            <div class="footer-heading">Stay Updated</div>
+            <p>Subscribe to our newsletter for exclusive offers, new collections, and special articles.</p>
+            <form id="newsletterForm">
+              <input type="email" placeholder="Enter your email" class="footer-email" aria-label="Email address" required />
+              <button class="footer-subscribe" type="submit">Subscribe</button>
+            </form>
+            <p id="newsletterMessage" class="newsletter-message" role="status"></p>
+          </div>
+        </div>
+        <div class="footer-icons-row">
+          <div class="footer-icon-card"><div class="footer-icon">🎨</div><div class="icon-title">Original Artwork</div><div class="icon-desc">Handcrafted pieces by real artists</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">🚚</div><div class="icon-title">Free Shipping</div><div class="icon-desc">Worldwide delivery available</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">🔒</div><div class="icon-title">Secure Payment</div><div class="icon-desc">100% safe transactions</div></div>
+          <div class="footer-icon-card"><div class="footer-icon">↩️</div><div class="icon-title">Easy Returns</div><div class="icon-desc">14-day return policy</div></div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">© <span data-year>2026</span> I-ArtWorks by Imtiyaz | All rights reserved.</div>
+          <div class="footer-links-bottom"><a href="info.html#privacy">Privacy Policy</a> | <a href="info.html#terms">Terms of Service</a></div>
+        </div>
+      </footer>
+
+  <script src="../data/artworks.js"></script>
+  <script src="../script/utils.js"></script>
+  <script src="../script/store.js"></script>
+  <script src="../script/auth.js"></script>
+  <script src="../script/layout.js"></script>
+  <script src="../script/index.js"></script>
+  <script src="../script/profile.js"></script>
+</body>
+</html>

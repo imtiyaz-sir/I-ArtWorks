@@ -1,450 +1,201 @@
-// Constants
-const BUSINESS_NAME = "I Art Works";
-const WHATSAPP_NUMBER = "916006202075"; // Enter number without '+' or spaces for API
+// ═══════════════════════════════════════════════════════════════
+// commission.js — custom painting request form (pages/commission.html)
+// Validates → saves to LocalStorage → opens a pre-filled WhatsApp
+// message → shows the success dialog.
+// ═══════════════════════════════════════════════════════════════
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    setupFormValidation();
-    setupFileUpload();
-    displayBagIcon();
-    setupWhatsAppFloating(); // Added this so the floating button appears
-    setupRealTimeValidation(); // Added this to init the input listeners
+const MAX_FILES = 5;
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+let selectedFiles = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('commissionForm');
+  if (!form) return;
+  form.setAttribute('novalidate', '');
+  setupFormValidation(form);
+  setupFileUpload();
+  setupCustomSize();
+  prefillFromAccount();
+  setupSuccessModal();
+  document.addEventListener('auth:changed', prefillFromAccount);
+
+  // WhatsApp floating button
+  if (!document.getElementById('whatsappFloat')) {
+    const a = document.createElement('a');
+    a.id = 'whatsappFloat'; a.className = 'whatsapp-float'; a.title = 'Chat on WhatsApp'; a.setAttribute('aria-label', 'Chat on WhatsApp');
+    a.target = '_blank'; a.rel = 'noopener';
+    a.href = whatsappUrl(`Hi ${SITE_CONFIG.businessName}! 👋\n\nI'm interested in commissioning custom artwork.\n\nCan you share details about artists, pricing and timeline?\n\nThank you!`);
+    a.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
+    document.body.appendChild(a);
+  }
 });
 
-// Display bag icon count
-function displayBagIcon() {
-    let iItemsStr = localStorage.getItem('iartwork');
-    let iartwork = iItemsStr ? JSON.parse(iItemsStr) : [];
-    let bagItemCountElement = document.querySelector('.bag-item-count');
-    
-    if (bagItemCountElement) {
-        if (iartwork.length > 0) {
-            bagItemCountElement.style.visibility = 'visible';
-            bagItemCountElement.innerText = iartwork.length;
-        } else {
-            bagItemCountElement.style.visibility = 'hidden';
-        }
-    }
+function prefillFromAccount() {
+  const user = authManager.getCurrentUser(); if (!user) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el && !el.value && v) el.value = v; };
+  set('full-name', user.fullName); set('email', user.email); set('phone', user.phone);
 }
 
-// Setup form validation and submission
-function setupFormValidation() {
-    const form = document.getElementById('commissionForm');
-    
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (validateForm()) {
-                submitCommissionRequest();
-            }
-        });
-    }
+function setupCustomSize() {
+  const size = document.getElementById('size'); const wrap = document.getElementById('customSizeGroup');
+  if (!size || !wrap) return;
+  size.addEventListener('change', () => {
+    const custom = size.value === 'custom';
+    wrap.hidden = !custom;
+    if (!custom) { const c = document.getElementById('custom-size'); c.value = ''; setFieldError(c, ''); }
+  });
 }
 
-// Validate form fields
+// ── Validation ───────────────────────────────────────────────────
+const FIELD_RULES = [
+  { id: 'full-name',        test: v => v.trim().length >= 2,  msg: 'Please enter your full name.' },
+  { id: 'email',            test: v => validateEmail(v),      msg: 'Please enter a valid email address.' },
+  { id: 'phone',            test: v => v.trim() === '' || validatePhone(v), msg: 'Enter a valid 10-digit phone number (or leave empty).' },
+  { id: 'portrait-type',    test: v => v !== '',              msg: 'Please select a portrait type.' },
+  { id: 'medium',           test: v => v !== '',              msg: 'Please select a medium.' },
+  { id: 'size',             test: v => v !== '',              msg: 'Please select a size.' },
+  { id: 'budget',           test: v => v === '' || Number(v) >= 100, msg: 'Budget should be at least ₹100 (or leave empty).' },
+  { id: 'special-requests', test: v => v.trim().length >= 20, msg: 'Please describe your idea in at least 20 characters.' }
+];
+
+function validateField(rule) {
+  const el = document.getElementById(rule.id); if (!el) return true;
+  const ok = rule.test(el.value);
+  setFieldError(el, ok ? '' : rule.msg);
+  return ok;
+}
+
 function validateForm() {
-    const requiredFields = [
-        { id: 'full-name', name: 'Full Name' },
-        { id: 'email', name: 'Email' },
-        { id: 'portrait-type', name: 'Portrait Type' },
-        { id: 'medium', name: 'Medium' },
-        { id: 'size', name: 'Size' },
-        { id: 'special-requests', name: 'Special Requests' }
-    ];
-    
-    let isValid = true;
-    let firstInvalidField = null;
-    
-    requiredFields.forEach(field => {
-        const element = document.getElementById(field.id);
-        if (element && !element.value.trim()) {
-            isValid = false;
-            element.style.borderColor = '#f54e77';
-            if (!firstInvalidField) {
-                firstInvalidField = element;
-            }
-        } else if (element) {
-            element.style.borderColor = '#ddd';
-        }
-    });
-    
-    // Validate email format
-    const emailField = document.getElementById('email');
-    if (emailField && emailField.value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailField.value)) {
-            isValid = false;
-            emailField.style.borderColor = '#f54e77';
-            showNotification('Please enter a valid email address', 'error');
-            if (!firstInvalidField) {
-                firstInvalidField = emailField;
-            }
-        }
-    }
-    
-    if (!isValid) {
-        if (firstInvalidField) {
-            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            firstInvalidField.focus();
-        }
-        showNotification('Please fill in all required fields', 'error');
-    }
-    
-    return isValid;
+  let firstBad = null;
+  FIELD_RULES.forEach(rule => { if (!validateField(rule) && !firstBad) firstBad = document.getElementById(rule.id); });
+  const size = document.getElementById('size'); const custom = document.getElementById('custom-size');
+  if (size.value === 'custom') {
+    const bad = custom.value.trim().length < 3;
+    setFieldError(custom, bad ? 'Please describe the custom size (e.g. 20" × 30").' : '');
+    if (bad && !firstBad) firstBad = custom;
+  }
+  if (firstBad) { firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstBad.focus({ preventScroll: true }); }
+  return !firstBad;
 }
 
-// Submit commission request
-function submitCommissionRequest() {
-    // Collect form data
-    const formData = {
-        fullName: document.getElementById('full-name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value || 'Not provided',
-        portraitType: document.getElementById('portrait-type').value,
-        medium: document.getElementById('medium').value,
-        size: document.getElementById('size').value,
-        budget: document.getElementById('budget').value || 'Not specified',
-        timeline: document.getElementById('timeline').value || 'Flexible',
-        specialRequests: document.getElementById('special-requests').value,
-        submittedAt: new Date().toLocaleString('en-IN')
-    };
-    
-    // Store in localStorage
-    let commissions = JSON.parse(localStorage.getItem('commissions') || '[]');
-    commissions.push(formData);
-    localStorage.setItem('commissions', JSON.stringify(commissions));
-    
-    // Send to WhatsApp
-    sendCommissionToWhatsApp(formData);
-    
-    // Show success modal
-    showSuccessModal();
-    
-    // Reset form
-    document.getElementById('commissionForm').reset();
-    
-    // Clear file list
-    const fileList = document.getElementById('file-list');
-    if (fileList) {
-        fileList.innerHTML = '';
-    }
+function setupFormValidation(form) {
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!validateForm()) { showNotification('Please fix the highlighted fields.', 'error'); return; }
+    submitCommissionRequest(form);
+  });
+  FIELD_RULES.forEach(rule => {
+    const el = document.getElementById(rule.id); if (!el) return;
+    el.addEventListener('blur', () => validateField(rule));
+    el.addEventListener('input', () => { if (el.classList.contains('input-invalid')) validateField(rule); });
+    el.addEventListener('change', () => { if (el.classList.contains('input-invalid')) validateField(rule); });
+  });
 }
 
-// Show success modal
+// ── Submit ───────────────────────────────────────────────────────
+function optionText(id) { const el = document.getElementById(id); return el && el.value ? el.options[el.selectedIndex].text : ''; }
+
+function submitCommissionRequest(form) {
+  const sizeVal = document.getElementById('size').value;
+  const sizeText = sizeVal === 'custom' ? `Custom: ${document.getElementById('custom-size').value.trim()}` : optionText('size');
+  const budget = document.getElementById('budget').value;
+  const fileNote = selectedFiles.length
+    ? `\n\n📎 Reference images (${selectedFiles.length}): ${selectedFiles.map(f => f.name).join(', ')} — I will attach them in this chat.`
+    : '';
+  const user = authManager.getCurrentUser();
+
+  const entry = {
+    id: generateId('com'),
+    userId: user ? user.id : null,
+    fullName: document.getElementById('full-name').value.trim(),
+    email: document.getElementById('email').value.trim().toLowerCase(),
+    phone: document.getElementById('phone').value.trim(),
+    portraitType: optionText('portrait-type'),
+    medium: optionText('medium'),
+    size: sizeText,
+    budget: budget ? `₹${Number(budget).toLocaleString('en-IN')}` : '',
+    timeline: optionText('timeline'),
+    specialRequests: document.getElementById('special-requests').value.trim() + fileNote,
+    referenceFiles: selectedFiles.map(f => f.name),
+    status: 'Submitted',
+    submittedAt: new Date().toLocaleString('en-IN'),
+    submittedISO: new Date().toISOString(),
+    source: 'commission-page'
+  };
+
+  Store.commissions.add(entry);
+  window.open(whatsappUrl(buildCommissionMessage(entry)), '_blank', 'noopener');
+  showSuccessModal();
+
+  form.reset();
+  selectedFiles = []; renderFileList();
+  document.getElementById('customSizeGroup').hidden = true;
+  form.querySelectorAll('.field-error').forEach(n => n.remove());
+  form.querySelectorAll('.input-invalid').forEach(n => n.classList.remove('input-invalid'));
+  prefillFromAccount();
+}
+
+// ── Success dialog ───────────────────────────────────────────────
 function showSuccessModal() {
-    const modal = document.getElementById('successModal');
-    if (modal) {
-        modal.classList.add('show');
-        // Auto-scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  const modal = document.getElementById('successModal'); if (!modal) return;
+  modal.classList.add('show'); document.body.classList.add('no-scroll');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// Close success modal
 function closeSuccessModal() {
-    const modal = document.getElementById('successModal');
-    if (modal) {
-        modal.classList.remove('show');
-        // Redirect to home page after closing
-        setTimeout(() => {
-            window.location.href = '../index.html';
-        }, 500);
-    }
+  const modal = document.getElementById('successModal');
+  if (modal) modal.classList.remove('show');
+  document.body.classList.remove('no-scroll');
 }
-
-// Setup file upload functionality
-function setupFileUpload() {
-    const fileInput = document.getElementById('reference-images');
-    const fileList = document.getElementById('file-list');
-    
-    if (fileInput && fileList) {
-        fileInput.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            
-            // Limit to 5 files
-            if (files.length > 5) {
-                showNotification('Maximum 5 files allowed', 'error');
-                fileInput.value = '';
-                return;
-            }
-            
-            // Display selected files
-            fileList.innerHTML = '';
-            files.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <span><i class="fa-solid fa-image"></i> ${file.name} (${formatFileSize(file.size)})</span>
-                    <button type="button" onclick="removeFile(${index})"><i class="fa-solid fa-times"></i></button>
-                `;
-                fileList.appendChild(fileItem);
-            });
-        });
-        
-        // Drag and drop functionality
-        const fileLabel = document.querySelector('.file-label');
-        if (fileLabel) {
-            fileLabel.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#f54e77';
-                this.style.background = '#fff';
-            });
-            
-            fileLabel.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ddd';
-                this.style.background = '#f9f9f9';
-            });
-            
-            fileLabel.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ddd';
-                this.style.background = '#f9f9f9';
-                
-                const files = Array.from(e.dataTransfer.files);
-                if (files.length > 5) {
-                    showNotification('Maximum 5 files allowed', 'error');
-                    return;
-                }
-                
-                // Trigger file input change
-                const dataTransfer = new DataTransfer();
-                files.forEach(file => dataTransfer.items.add(file));
-                fileInput.files = dataTransfer.files;
-                
-                // Trigger change event
-                fileInput.dispatchEvent(new Event('change'));
-            });
-        }
-    }
+function setupSuccessModal() {
+  document.querySelectorAll('[data-close-success]').forEach(b => b.addEventListener('click', closeSuccessModal));
 }
-
-// Remove file from selection
-function removeFile(index) {
-    const fileInput = document.getElementById('reference-images');
-    
-    if (fileInput) {
-        const dataTransfer = new DataTransfer();
-        const files = Array.from(fileInput.files);
-        
-        files.forEach((file, i) => {
-            if (i !== index) {
-                dataTransfer.items.add(file);
-            }
-        });
-        
-        fileInput.files = dataTransfer.files;
-        fileInput.dispatchEvent(new Event('change'));
-    }
-}
-
-// Format file size
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-// Show notification
-function showNotification(message, type = 'success') {
-    // Remove existing notification
-    const existing = document.querySelector('.notification');
-    if (existing) {
-        existing.remove();
-    }
-    
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-    
-    const bgColor = type === 'error' ? '#f54e77' : '#2bb673';
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${bgColor};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 4000;
-        animation: slideIn 0.3s ease;
-        max-width: 400px;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// Add animation styles dynamically
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(400px); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
-
-// Close modal when clicking outside
-window.addEventListener('click', function(e) {
-    const modal = document.getElementById('successModal');
-    if (e.target === modal) {
-        closeSuccessModal();
-    }
-});
-
-// Setup Real-time validation
-function setupRealTimeValidation() {
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.hasAttribute('required') && !this.value.trim()) {
-                this.style.borderColor = '#f54e77';
-            } else {
-                this.style.borderColor = '#ddd';
-            }
-        });
-        
-        input.addEventListener('focus', function() {
-            this.style.borderColor = '#f54e77';
-        });
-    });
-}
-
-// ========== WhatsApp Integration ==========
-
-// Send commission details to WhatsApp
-function sendCommissionToWhatsApp(formData) {
-    // Format the message beautifully
-    const message = `
-🎨 *NEW COMMISSION REQUEST* 🎨
-
-*Customer Details:*
-━━━━━━━━━━━━━━━
-👤 Name: ${formData.fullName}
-📧 Email: ${formData.email}
-📱 Phone: ${formData.phone}
-
-*Artwork Requirements:*
-━━━━━━━━━━━━━━━
-🖼️ Portrait Type: ${formData.portraitType}
-🎨 Medium: ${formData.medium}
-📐 Size: ${formData.size}
-💰 Budget: ${formData.budget}
-⏰ Timeline: ${formData.timeline}
-
-*Special Requests:*
-━━━━━━━━━━━━━━━
-${formData.specialRequests}
-
-📅 *Submitted:* ${formData.submittedAt}
-
-━━━━━━━━━━━━━━━
-_Sent from ${BUSINESS_NAME} Commission Form_
-`.trim();
-
-    // Open WhatsApp with pre-filled message
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    
-    // Open in new window/tab
-    window.open(whatsappURL, '_blank');
-}
-
-// Setup WhatsApp floating button
-function setupWhatsAppFloating() {
-    // Create floating WhatsApp button if it doesn't exist
-    if (!document.getElementById('whatsappFloat')) {
-        const floatingBtn = document.createElement('a');
-        floatingBtn.id = 'whatsappFloat';
-        floatingBtn.className = 'whatsapp-float';
-        floatingBtn.href = '#';
-        floatingBtn.title = 'Chat on WhatsApp';
-        floatingBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
-        floatingBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            sendGeneralCommissionInquiry();
-        });
-        document.body.appendChild(floatingBtn);
-        
-        // Add floating button styles
-        const floatStyle = document.createElement('style');
-        floatStyle.textContent = `
-            .whatsapp-float {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 60px;
-                height: 60px;
-                background: #25D366;
-                color: white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 2rem;
-                box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
-                z-index: 9999;
-                transition: all 0.3s;
-                animation: pulse 2s infinite;
-                text-decoration: none;
-            }
-            .whatsapp-float:hover {
-                transform: scale(1.1);
-                box-shadow: 0 10px 30px rgba(37, 211, 102, 0.6);
-            }
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-            }
-            @media (max-width: 768px) {
-                .whatsapp-float {
-                    bottom: 20px;
-                    right: 20px;
-                    width: 50px;
-                    height: 50px;
-                    font-size: 1.5rem;
-                }
-            }
-        `;
-        document.head.appendChild(floatStyle);
-    }
-}
-
-// Send general commission inquiry
-function sendGeneralCommissionInquiry() {
-    const message = `Hi ${BUSINESS_NAME}! 👋
-
-I'm interested in commissioning custom artwork.
-
-Can you provide more details about:
-• Available artists and their styles
-• Pricing and timeline
-• The commission process
-
-Thank you!`;
-
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
-}
-
-// Quick WhatsApp inquiry from page
 function quickWhatsAppInquiry() {
-    const message = `Hi ${BUSINESS_NAME}! 👋
+  window.open(whatsappUrl(`Hi ${SITE_CONFIG.businessName}! 👋\n\nI have a question about commissioning artwork.\n\nCan you help me?`), '_blank', 'noopener');
+}
 
-I have a question about commissioning artwork.
+// ── Reference image upload ───────────────────────────────────────
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 
-Can you help me?`;
+function addFiles(fileList) {
+  const incoming = Array.from(fileList);
+  for (const file of incoming) {
+    if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) { showNotification(`"${file.name}" is not a supported image (use PNG or JPG).`, 'error'); continue; }
+    if (file.size > MAX_FILE_BYTES) { showNotification(`"${file.name}" is larger than 5 MB.`, 'error'); continue; }
+    if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) continue;
+    if (selectedFiles.length >= MAX_FILES) { showNotification(`Maximum ${MAX_FILES} files allowed.`, 'error'); break; }
+    selectedFiles.push(file);
+  }
+  renderFileList();
+}
 
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappURL, '_blank');
+function renderFileList() {
+  const list = document.getElementById('file-list'); if (!list) return;
+  list.innerHTML = '';
+  selectedFiles.forEach((file, index) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    const label = document.createElement('span');
+    label.innerHTML = '<i class="fa-solid fa-image"></i> ';
+    label.appendChild(document.createTextNode(`${file.name} (${formatFileSize(file.size)})`));
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.setAttribute('aria-label', `Remove ${file.name}`);
+    btn.textContent = '×'; btn.className = 'file-remove';
+    btn.addEventListener('click', () => { selectedFiles.splice(index, 1); renderFileList(); });
+    item.append(label, btn); list.appendChild(item);
+  });
+}
+
+function setupFileUpload() {
+  const input = document.getElementById('reference-images');
+  const label = document.querySelector('.file-label');
+  if (!input) return;
+  input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
+  if (!label) return;
+  ['dragenter', 'dragover'].forEach(ev => label.addEventListener(ev, e => { e.preventDefault(); label.classList.add('drag-over'); }));
+  ['dragleave', 'drop'].forEach(ev => label.addEventListener(ev, e => { e.preventDefault(); label.classList.remove('drag-over'); }));
+  label.addEventListener('drop', e => addFiles(e.dataTransfer.files));
 }

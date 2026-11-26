@@ -1,44 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commission Custom Artwork - I-ArtWorks</title>
-    <meta name="description" content="Commission a custom portrait or artwork from talented artists. Personalized art that captures your memories.">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/commission.css">
-        <link rel="stylesheet" href="/css/wishlist.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commission Custom Artwork - I-ArtWorks</title>
+  <meta name="description" content="Commission a custom portrait or artwork from talented artists. Personalized art that captures your memories.">
+  <meta name="theme-color" content="#f54e77">
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/wishlist.css">
+  <link rel="stylesheet" href="../css/commission.css">
+  <link rel="stylesheet" href="../css/auth.css">
+  <link rel="stylesheet" href="../css/layout.css">
 </head>
 <body>
-   <!-- Header -->
    <header class="main-header">
+      <button class="menu-btn" type="button" aria-label="Open menu">☰</button>
       <div class="logo_container">
-        <a href="../index.html"><img class="Imax_home" src="/I-ArtWorks/images/logo.png" alt="I-ArtWorks"></a>
+        <a href="../index.html"><img class="Imax_home" src="../images/logo.png" alt="I-ArtWorks" width="80" height="80"></a>
       </div>
-      <nav class="nav_bar">
+      <nav class="nav_bar" aria-label="Main">
         <a href="../index.html#gallery">Gallery</a>
-        <a href="../pages/commission.html" class="active">Commissions</a>
+        <a href="commission.html">Commissions</a>
         <a href="../index.html#about">About</a>
         <a href="../index.html#contact">Contact</a>
       </nav>
       <div class="action_bar">
- <a class="action_container" href="wishlist.html" id="wishlistBtn">
+        <a class="action_container" href="wishlist.html" id="wishlistBtn" aria-label="Wishlist">
           <span class="material-symbols-outlined action_icon">favorite</span>
           <span class="action_name">Wishlist</span>
           <span class="wishlist-badge">0</span>
         </a>
-        <a class="action_container" href="#" id="profileBtn">
+        <a class="action_container" href="#" id="profileBtn" aria-label="Account">
           <span class="material-symbols-outlined action_icon">person</span>
-          <span class="action_name">Profile</span>
+          <span class="action_name">Login</span>
         </a>
-        <a class="action_container" href="bag.html">
+        <a class="action_container" href="bag.html" aria-label="Shopping bag">
           <span class="material-symbols-outlined action_icon">shopping_bag</span>
           <span class="action_name">Bag</span>
           <span class="bag-item-count">0</span>
         </a>
       </div>
-   </header>
+    </header>
 
    <!-- Hero Section -->
    <section class="commission-hero">
@@ -113,7 +119,7 @@
                   <div class="form-row">
                      <div class="form-group">
                         <label for="full-name"><i class="fa-solid fa-user"></i> Full Name *</label>
-                        <input type="text" id="full-name" required placeholder="Enter your full name">
+                        <input type="text" id="full-name" required placeholder="Enter your full name" autocomplete="name">
                      </div>
                      <div class="form-group">
                         <label for="email"><i class="fa-solid fa-envelope"></i> Email Address *</label>
@@ -169,10 +175,14 @@
                            <option value="custom">Custom Size</option>
                         </select>
                         <p class="note">💡 Larger sizes allow for more detail</p>
+                        <div id="customSizeGroup" class="custom-size-group" hidden>
+                           <label for="custom-size" class="sr-only">Custom size</label>
+                           <input type="text" id="custom-size" placeholder='e.g. 20" × 30"'>
+                        </div>
                      </div>
                      <div class="form-group">
                         <label for="budget"><i class="fa-solid fa-indian-rupee-sign"></i> Budget (Optional)</label>
-                        <input type="number" id="budget" placeholder="₹ 200 - ₹ 1,000">
+                        <input type="number" id="budget" min="100" step="50" inputmode="numeric" placeholder="₹ 200 - ₹ 1,000">
                         <p class="note">💡 This helps us recommend suitable options</p>
                      </div>
                   </div>
@@ -335,18 +345,12 @@ Examples:
       </main>
    </div>
 
-   <!-- Footer -->
    <footer class="site-footer">
-      <div class="footer-bottom">
-         <div class="footer-copy">
-            © 2025 I-ArtWorks by Imtiyaz | All rights reserved.
-         </div>
-         <div class="footer-links-bottom">
-            <a href="#privacy">Privacy Policy</a> | 
-            <a href="#terms">Terms of Service</a>
-         </div>
-      </div>
-   </footer>
+        <div class="footer-bottom">
+          <div class="footer-copy">© <span data-year>2026</span> I-ArtWorks by Imtiyaz | All rights reserved.</div>
+          <div class="footer-links-bottom"><a href="info.html#privacy">Privacy Policy</a> | <a href="info.html#terms">Terms of Service</a></div>
+        </div>
+    </footer>
 
    <!-- Success Modal -->
    <div id="successModal" class="modal">
@@ -356,17 +360,21 @@ Examples:
          <p>Thank you for your commission request. We'll review your details and get back to you within 24-48 hours with artist recommendations and a detailed quote.</p>
          <p><strong>What happens next?</strong></p>
          <ul>
-            <li>You'll receive a confirmation email shortly</li>
+            <li>Your request is saved and a WhatsApp message is ready to send to us</li>
             <li>Our team will match you with the perfect artist</li>
             <li>You'll get a detailed quote and timeline</li>
          </ul>
-         <button onclick="closeSuccessModal()" class="close-modal-btn">Close</button>
+         <button type="button" onclick="closeSuccessModal()" class="close-modal-btn">Close</button>
+         <a href="../index.html" class="success-home-link">Back to Home</a>
       </div>
    </div>
 
-   <script src="../data/artworks.js"></script>
-   <script src="../script/index.js"></script>
-   <script src="../script/commission.js"></script>
-   <script src="../script/wishlist.js"></script>
+   
+  <script src="../data/artworks.js"></script>
+  <script src="../script/utils.js"></script>
+  <script src="../script/store.js"></script>
+  <script src="../script/auth.js"></script>
+  <script src="../script/layout.js"></script>
+  <script src="../script/commission.js"></script>
 </body>
 </html>
